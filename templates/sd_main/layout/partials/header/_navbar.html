@@ -2,7 +2,8 @@
 <div class="app-navbar flex-shrink-0">
     <!--begin::Search-->
     <div class="app-navbar-item align-items-stretch ms-1 ms-lg-3">
-<!--layout-partial:partials/search/_dropdown.html-->
+        <!--layout-partial:partials/search/_dropdown.html-->
+        {% include '../../../partials/search/_dropdown.html' %}
     </div>
     <!--end::Search-->
     <!--begin::Activities-->
@@ -13,12 +14,14 @@
         <!--end::Drawer toggle-->
     </div>
     <!--end::Activities-->
+    {% comment %}
     <!--begin::Notifications-->
     <div class="app-navbar-item ms-1 ms-lg-3">
         <!--begin::Menu- wrapper-->
         <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-            <i class="ki-duotone ki-notification-status fs-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>        </div>
-<!--layout-partial:partials/menus/_notifications-menu.html-->
+            <i class="ki-duotone ki-notification-status fs-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+        </div>
+        <!--layout-partial:partials/menus/_notifications-menu.html-->
         <!--end::Menu wrapper-->
     </div>
     <!--end::Notifications-->
@@ -42,15 +45,17 @@
                 <img class="rounded" src="{% static 'assets/media/flags/united-states.svg' %}" alt=""/>
             </span>
         </div>
-<!--layout-partial:partials/menus/_languages-menu.html-->
+        <!--layout-partial:partials/menus/_languages-menu.html-->
         <!--end::Menu wrapper-->
     </div>
     <!--end::Languages-->
     <!--begin::Theme mode-->
     <div class="app-navbar-item ms-1 ms-lg-3">
-<!--layout-partial:partials/theme-mode/_main.html-->
+        <!--layout-partial:partials/theme-mode/_main.html-->
+        {# include '../../../partials/theme-mode/_main.html' #}
     </div>
     <!--end::Theme mode-->
+    {% endcomment %}
     <!--begin::User menu-->
     <div class="app-navbar-item ms-2 ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
         <!--begin::Menu wrapper-->
@@ -58,15 +63,17 @@
             {% load static %}
             <img src="{% static 'assets/media/avatars/300-3.jpg' %}" alt="user"/>
         </div>
-<!--layout-partial:partials/menus/_user-account-menu.html-->
+        <!--layout-partial:partials/menus/_user-account-menu.html-->
+        {% include '../../../partials/menus/_user-account-menu.html' %}
         <!--end::Menu wrapper-->
     </div>
     <!--end::User menu-->
     <!--begin::Header menu toggle-->
-            <div class="app-navbar-item d-lg-none ms-2 me-n2" title="Show header menu">
-            <div class="btn btn-flex btn-icon btn-active-color-primary w-30px h-30px" id="kt_app_header_menu_toggle">
-                <i class="ki-duotone ki-element-4 fs-1"><span class="path1"></span><span class="path2"></span></i>            </div>
+    <div class="app-navbar-item d-lg-none ms-2 me-n2" title="Show header menu">
+        <div class="btn btn-flex btn-icon btn-active-color-primary w-30px h-30px" id="kt_app_header_menu_toggle">
+            <i class="ki-duotone ki-element-4 fs-1"><span class="path1"></span><span class="path2"></span></i>
         </div>
-        <!--end::Header menu toggle-->
+    </div>
+    <!--end::Header menu toggle-->
 </div>
 <!--end::Navbar-->
