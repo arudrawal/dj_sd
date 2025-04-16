@@ -4,3 +4,9 @@ from django.http import HttpResponse
 # Create your views here.
 def index(request):
     return render(request, 'sd_main/dash/notifications.html')
+
+def vehicles(request):
+    return render(request, 'sd_main/dash/vehicles.html')
+
+def drivers(request):
+    return render(request, 'sd_main/dash/drivers.html')
