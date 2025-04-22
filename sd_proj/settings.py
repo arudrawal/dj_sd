@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Add our sd_main application
+    'sd_main.apps.SdMainConfig', # This object was created for us in /sd_main/apps.py
 ]
 
 MIDDLEWARE = [

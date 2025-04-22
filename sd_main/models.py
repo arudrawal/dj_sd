@@ -39,8 +39,8 @@ class Policy(models.Model):
         max_length=1,
         choices=POLICY_STATUS,
         blank=True,
-        default='m',
-        help_text='Book availability',
+        default='r',
+        help_text='Renewal pending',
     )
     owner_phone = models.CharField(max_length=100, null=True, blank=True)
     owner_email = models.CharField(max_length=100, null=True, blank=True)
