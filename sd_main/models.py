@@ -67,5 +67,5 @@ class PolicyDocument(models.Model):
     file_name_uploaded = models.CharField(max_length=512)
     file_name_cloud = models.CharField(max_length=512)
     file_type = models.CharField(max_length=32)
-    file_text_extract = models.TextFieldField()
+    file_text_extract = models.TextField(null=True)
 

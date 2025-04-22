@@ -1,0 +1,34 @@
+{% extends "../index.html" %}
+
+{% block content %}
+<div id="kt_app_content" class="app-content  flex-column-fluid ">
+    <!--begin::Content container-->
+    <div id="kt_app_content_container" class="app-container  container-xxl ">
+        <!--begin::Row-->
+        <div class="row g-5 g-xl-8">
+            <!--begin::Col-->
+            <div class="col-xl-12">
+
+<div class="container-fixed"
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Upload Policy Notifications</h3>
+            </div>
+            <div class="card-body">
+                <form action="{%url 'upload' %}" method="post" enctype="multipart/form-data">
+                    <input class="file-input file-input-lg" type="file"/>
+                </form>                
+            </div>
+            <div class="card-footer justify-center">
+                <input type="submit" value="Upload Policy Data" name="submit">
+                {# <a class="btn btn-link" href="#">Example link</a> #}
+            </div>
+        </div>
+    </div>
+<div>
+            </div> <!--end::Col-->
+        </div><!--end::Row-->
+    </div><!--end::Content container-->
+</div><!--end:: Contents -->
+{% endblock %}
