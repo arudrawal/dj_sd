@@ -68,7 +68,7 @@
                     <!--begin:Menu item-->
                     <div  class="menu-item">
                         <!--begin:Menu link-->
-                        {% url 'upload' as upload_url %}
+                        {% url 'upload_policy' as upload_url %}
                         <a class="menu-link {% if request.path == upload_url %}active{% endif %}" href="{{upload_url}}">
                             {# <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>#}
                             <span class="menu-title">Import Data</span>

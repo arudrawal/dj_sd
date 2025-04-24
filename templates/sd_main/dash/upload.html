@@ -8,26 +8,30 @@
         <div class="row g-5 g-xl-8">
             <!--begin::Col-->
             <div class="col-xl-12">
-
-<div class="container-fixed"
-    <div class="container-fluid">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Upload Policy Notifications</h3>
-            </div>
-            <div class="card-body">
-                <form action="{%url 'upload' %}" method="post" enctype="multipart/form-data">
-                    <input class="file-input file-input-lg" type="file"/>
-                </form>                
-            </div>
-            <div class="card-footer justify-center">
-                <input type="submit" value="Upload Policy Data" name="submit">
-                {# <a class="btn btn-link" href="#">Example link</a> #}
-            </div>
-        </div>
-    </div>
-<div>
-            </div> <!--end::Col-->
+                <!-- Upload Policy Notifications -->
+                <div class="container-fixed"
+                    <div class="container-fluid">
+                        <form action="{%url 'upload_policy' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Upload Policy Notifications</h3>
+                                </div>
+                                <div class="card-body">
+                                    <input class="file-input file-input-lg" type="file" name="policy_file"/>
+                                </div>
+                                <div class="card-footer justify-center">
+                                    <input type="submit" value="Upload Policy Data" name="submit_policy_file">
+                                    {% if uploded_file_url %}
+                                        <p>File uploaded at: <a href="{{ uploded_file_url }}">{{ uploded_file_url }}</a></p>
+                                    {% endif %}
+                                    {# <a class="btn btn-link" href="#">Example link</a> #}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                <div><!--end:: Upload Policy Notifications -->
+            </div><!--end::Col-->
         </div><!--end::Row-->
     </div><!--end::Content container-->
 </div><!--end:: Contents -->

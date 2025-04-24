@@ -1,0 +1,4 @@
+policy,make,model,vin,lic
+1001,'Toyota',Avalon,VIN001,3UUP470
+1001,'Lexus',350,VIN002,7UUP480
+1002,'BWM',400,VIN003,7UUP490
