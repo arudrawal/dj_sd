@@ -1,14 +1,16 @@
 import uuid
 from django.db import models
 from django.urls import reverse
-
+   
 class Driver(models.Model):
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     driving_license = models.CharField(max_length=50)
     name = models.CharField(max_length=100)
     issue_date = models.DateField()
     expiry_date = models.DateField()
 
 class Vehicle(models.Model):
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     vin = models.CharField(max_length=100)
     license_plate = models.CharField(max_length=50)
     reg_end_date = models.DateField()
@@ -16,6 +18,7 @@ class Vehicle(models.Model):
 
 # Create your models here.
 class Policy(models.Model):
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     policy_number = models.CharField(max_length=100)
     # uuid to associate policy documents in cloud storage
     uuid = models.UUIDField(default=uuid.uuid4,
@@ -61,6 +64,7 @@ class Policy(models.Model):
         return reverse('policy-detail', args=[str(self.id)])
 
 class PolicyDocument(models.Model):
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     uuid = models.UUIDField(default=uuid.uuid4,
                           help_text="Unique ID for this particular policy document")
     policy_id = models.ForeignKey('Policy', on_delete=models.CASCADE)

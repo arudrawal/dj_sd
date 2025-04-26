@@ -18,6 +18,8 @@ TEMPLATE_DIR= os.path.join(BASE_DIR,"templates")
 STATIC_DIR = os.path.join(BASE_DIR,"static")
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+LOGIN_REDIRECT_URL = "index"
+LOGOUT_REDIRECT_URL = "accounts/login"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Add our sd_main application
     'sd_main.apps.SdMainConfig', # This object was created for us in /sd_main/apps.py
+    'accounts.apps.AccountsConfig', # This object was created for us in /accounts/apps.py
 ]
 
 MIDDLEWARE = [

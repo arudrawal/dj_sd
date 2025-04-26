@@ -1,0 +1,88 @@
+{% extends './base.html' %}
+
+{% block base_content %}
+{% load static %}
+{% comment %}
+<form method="POST">
+    {% csrf_token %}
+    {% form.as_p %}
+    <button type="submit">Login</button>
+</form>
+{% endcomment %}
+
+<form action="#" class="card-body flex flex-col gap-5 p-10" id="sign_in_form" method="get">
+    <div class="text-center mb-2.5">
+     <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
+      Sign in
+     </h3>
+     <div class="flex items-center justify-center font-medium">
+      <span class="text-2sm text-gray-700 me-1.5">
+       Need an account?
+      </span>
+      <a class="text-2sm link" href="{%url 'signup'}">
+       Sign up
+      </a>
+     </div>
+    </div>
+    {% comment %}
+    <div class="grid grid-cols-2 gap-2.5">
+     <a class="btn btn-light btn-sm justify-center" href="#">
+      <img alt="" class="size-3.5 shrink-0" src="{%static 'assets/media/brand-logos/google.svg'%}"/>
+      Use Google
+     </a>
+     <a class="btn btn-light btn-sm justify-center" href="#">
+      <img alt="" class="size-3.5 shrink-0 dark:hidden" src="{%static 'assets/media/brand-logos/apple-black.svg' %}"/>
+      <img alt="" class="size-3.5 shrink-0 light:hidden" src="{%static 'assets/media/brand-logos/apple-white.svg' %}"/>
+      Use Apple
+     </a>
+    </div>
+    {%endcomment%}
+    <div class="flex items-center gap-2">
+        <span class="border-t border-gray-200 w-full">
+        </span>
+        <span class="text-2xs text-gray-500 font-medium uppercase">
+            <br/>&nbsp;<br/>
+        </span>
+        <span class="border-t border-gray-200 w-full">
+        </span>
+    </div>
+    <div class="flex flex-col gap-1 align-items-stretch">
+        <label class="form-label font-normal text-gray-900">
+            Email
+        </label>
+        <br/>
+        <input class="input" placeholder="email@email.com" type="text" value=""/>
+    </div>
+    <span class="text-2xs text-gray-500 font-medium uppercase">
+        <br/>
+    </span>
+    <div class="flex flex-col gap-1">
+        <div class="flex items-center justify-between gap-1">
+            <label class="form-label font-normal text-gray-900">
+            Password
+            </label>
+            <br/>
+            <input name="user_password" placeholder="Enter Password" type="password" value=""/>
+            {# <a class="text-2sm link shrink-0" href="#">Forgot Password?</a> #}
+        </div>
+     <div class="input" data-toggle-password="true">
+      {# <input name="user_password" placeholder="Enter Password" type="password" value=""/>#}
+      <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+       <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
+       </i>
+       <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
+       </i>
+      </button>
+     </div>
+    </div>
+    <label class="checkbox-group">
+     <input class="checkbox checkbox-sm" name="check" type="checkbox" value="1"/>
+     <span class="checkbox-label">
+      Remember me
+     </span>
+    </label>
+    <button class="btn btn-primary flex justify-center grow">
+     Sign Up
+    </button>
+   </form>
+{% endblock %}
