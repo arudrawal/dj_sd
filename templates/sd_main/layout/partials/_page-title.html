@@ -17,6 +17,9 @@
         {% else %}
             Default
         {% endif %}
+        {% if user.groups.all %}
+            - {{ user.groups.all.0.name }}
+        {% endif %}
     </h1>
     <!--end::Title-->
     {% comment %}
