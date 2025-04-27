@@ -10,7 +10,8 @@
 </form>
 {% endcomment %}
 
-<form action="#" class="card-body flex flex-col gap-5 p-10" id="sign_in_form" method="get">
+<form action="{% url 'login' %}" class="card-body flex flex-col gap-5 p-10" id="sign_in_form" method="post">
+    {% csrf_token %}
     <div class="text-center mb-2.5">
      <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
       Sign in
@@ -51,7 +52,8 @@
             Email
         </label>
         <br/>
-        <input class="input" placeholder="email@email.com" type="text" value=""/>
+        {# <input class="input" placeholder="email@email.com" type="text" value=""/> #}
+        {{ form.username }}
     </div>
     <span class="text-2xs text-gray-500 font-medium uppercase">
         <br/>
@@ -62,27 +64,33 @@
             Password
             </label>
             <br/>
-            <input name="user_password" placeholder="Enter Password" type="password" value=""/>
+            {{ form.password }}
+            {# <input name="user_password" placeholder="Enter Password" type="password" value=""/> #}
             {# <a class="text-2sm link shrink-0" href="#">Forgot Password?</a> #}
         </div>
-     <div class="input" data-toggle-password="true">
-      {# <input name="user_password" placeholder="Enter Password" type="password" value=""/>#}
-      <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
-       <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
-       </i>
-       <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
-       </i>
-      </button>
-     </div>
+        {% comment %}
+        <div class="input" data-toggle-password="true">
+            {# <input name="user_password" placeholder="Enter Password" type="password" value=""/>#}
+            <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+                <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
+                </i>
+                <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
+                </i>
+            </button>
+        </div>
+        {% endcomment %}
     </div>
+    {% comment %}
     <label class="checkbox-group">
      <input class="checkbox checkbox-sm" name="check" type="checkbox" value="1"/>
      <span class="checkbox-label">
       Remember me
      </span>
     </label>
-    <button class="btn btn-primary flex justify-center grow">
-     Sign Up
+    {% endcomment %}
+    <hr/>
+    <button class="btn btn-primary flex justify-center grow" type="submit" value="login">
+     Sign In
     </button>
    </form>
 {% endblock %}

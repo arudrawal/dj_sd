@@ -61,7 +61,8 @@
         <!--begin::Menu wrapper-->
         <div class="cursor-pointer symbol symbol-35px symbol-md-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
             {% load static %}
-            <img src="{% static 'assets/media/avatars/300-3.jpg' %}" alt="user"/>
+            <img src="{% static 'assets/media/avatars/blank.png' %}" alt="{{user.get_username}}" title="{{user.get_username}}"/>
+            <br/>{{user.get_username}}
         </div>
         <!--layout-partial:partials/menus/_user-account-menu.html-->
         {% include '../../../partials/menus/_user-account-menu.html' %}

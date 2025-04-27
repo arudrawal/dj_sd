@@ -6,16 +6,16 @@
         <div class="menu-content d-flex align-items-center px-3">
             <!--begin::Avatar-->
             <div class="symbol symbol-50px me-5">
-                <img alt="Logo" src="{%static 'assets/media/avatars/300-3.jpg' %}"/>
+                <img alt="{{user.get_username}}" src="{%static 'assets/media/avatars/blank.png' %}"/>
             </div>
             <!--end::Avatar-->
             <!--begin::Username-->
             <div class="d-flex flex-column">
                 <div class="fw-bold d-flex align-items-center fs-5">
-                    Max Smith                    <span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">Pro</span>
+                    <span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">{{user.get_username}}</span>
                 </div>
                 <a href="#" class="fw-semibold text-muted text-hover-primary fs-7">
-                    max@kt.com                </a>
+                    {{user.email}}</a>
             </div>
             <!--end::Username-->
         </div>
@@ -31,6 +31,7 @@
         </a>
     </div>
     <!--end::Menu item-->
+    {%comment%}
     <!--begin::Menu item-->
     <div class="menu-item px-5">
         <a href="?page=apps/projects/list" class="menu-link px-5">
@@ -105,9 +106,11 @@
         </a>
     </div>
     <!--end::Menu item-->
+    {%endcomment%}
     <!--begin::Menu separator-->
     <div class="separator my-2"></div>
     <!--end::Menu separator-->
+    {%comment%}
     <!--begin::Menu item-->
     <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
         <a href="#" class="menu-link px-5">
@@ -180,12 +183,23 @@
             Account Settings
         </a>
     </div>
+    {%endcomment%}
     <!--end::Menu item-->
     <!--begin::Menu item-->
     <div class="menu-item px-5">
-        <a href="?page=authentication/layouts/corporate/sign-in" class="menu-link px-5">
-            Sign Out
-        </a>
+        <script>
+            function submitParentForm(child) {
+                const parentForm = document.getElementById('form_logout_id');
+                parentForm.submit();
+            }        
+        </script>
+        <form action="{% url 'logout' %}" method="post" name="form_logout" id="form_logout_id">
+            {% csrf_token %}
+            <button type="submit" style="display: none;">Log Out</button>
+            <a href="javascript:submitParentForm();" class="menu-link px-5">
+                Sign Out
+            </a>    
+        </form>
     </div>
     <!--end::Menu item-->
 </div>
