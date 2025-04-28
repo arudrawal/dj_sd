@@ -6,20 +6,7 @@
     {% url 'upload' as upload_url %}
     <!--begin::Title-->
     <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-        {% if request.path == notif_url %}
-            Notifications
-        {% elif request.path == veh_url %}
-            Vehicles
-        {% elif request.path == driver_url %}
-            Drivers
-        {% elif request.path == upload_url %}
-            Import Data
-        {% else %}
-            Default
-        {% endif %}
-        {% if user.groups.all %}
-            - {{ user.groups.all.0.name }}
-        {% endif %}
+        {{page_title}}  {{agency_name}}
     </h1>
     <!--end::Title-->
     {% comment %}

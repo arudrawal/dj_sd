@@ -1,21 +1,31 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
-from .forms import UploadPolicyForm
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .forms import UploadPolicyForm
 
 # Create your views here.
 @login_required
 def index(request):
-    return render(request, 'sd_main/dash/notifications.html')
+    context_dict = {'page_title': 'Notifications', 'agency_name': ''}
+    if request.user.groups.all():
+        context_dict['agency_name'] = request.user.groups.all()[0]
+    return render(request, 'sd_main/dash/notifications.html', context_dict)
 
 @login_required
 def vehicles(request):
-    return render(request, 'sd_main/dash/vehicles.html')
+    context_dict = {'page_title': 'Vehicles', 'agency_name': ''}
+    if request.user.groups.all():
+        context_dict['agency_name'] = request.user.groups.all()[0]
+    return render(request, 'sd_main/dash/vehicles.html', context_dict)
 
 @login_required
 def drivers(request):
-    return render(request, 'sd_main/dash/drivers.html')
+    context_dict = {'page_title': 'Drivers', 'agency_name': ''}
+    if request.user.groups.all():
+        context_dict['agency_name'] = request.user.groups.all()[0]
+    return render(request, 'sd_main/dash/drivers.html', context_dict)
 
 @login_required
 def upload_policy(request):
