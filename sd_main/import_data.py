@@ -33,9 +33,8 @@ def get_csv_data_type(dot_txt_file, non_str: dict = {}):
     return dtype_dict
 
 """ Read CSV file, non_str: dictionary non string type columns. """
-def read_file_csv(file: str, non_str:dict={}) -> pd.DataFrame:
+def read_file_csv(file, data_type:dict={}) -> pd.DataFrame:
     try:
-        data_type = get_csv_data_type(file, non_str=non_str)
         return pd.read_csv(file, sep=',', engine="c", dtype=data_type)
     except BaseException as e:
         print(e)
@@ -53,15 +52,16 @@ def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
     """
     
     file_content = file.read().decode('utf-8')
+    data1 = StringIO(file_content)
+    data_type = get_csv_data_type(data1)
     data = StringIO(file_content)
-    # df = pd.read_csv(data)
-    df = read_file_csv(data)
+    df = read_file_csv(data, data_type)
     return df
    
 def get_existing_policies(group_name: str):
     """ Vendor specific unique hash (policy_number+end_date) """
     policies_by_hash = {}
-    all_policies = Policy.objects.filter('group' == group_name)
+    all_policies = Policy.objects.filter(group=group_name)
     for existing_policy_row in all_policies:
         hash_key = str(existing_policy_row.policy_number) + ':' + existing_policy_row.end_date.strftime("%Y%m%d")
         policies_by_hash[hash_key] = existing_policy_row
@@ -70,18 +70,22 @@ def get_existing_policies(group_name: str):
 def add_policy(df_policy: pd.DataFrame):
     db_columns = ["policy_number", "policy_owner", "start_date", "end_date","owner_phone", "owner_email", "policy_type"]
     df_db_policy = df_policy[db_columns]
-    policy_model_instances = [Policy(**item) for item in df_db_policy]
+    policy_model_instances = [Policy(policy_number=row['policy_number'], policy_owner=row['policy_owner'],
+                                     start_date=row['start_date'], end_date=row['end_date'],
+                                     owner_phone = row['owner_phone'], owner_email = row['owner_email'],
+                                     policy_type = row['policy_type']) for _,row in df_db_policy.iterrows()]
     Policy.objects.bulk_create(policy_model_instances)
+    return len(policy_model_instances)
 
 def update_policy(df_policy: pd.DataFrame):
-    pass
+    return len(df_policy.index)
 
 def import_policy(df_policy: pd.DataFrame, group_name: str):
     policies_by_hash = get_existing_policies(group_name)
     existing_hash_ids = policies_by_hash.keys()
     df_policy = df_policy
     if not df_policy.empty:
-        df_policy["hash_key"] = df_policy.apply(lambda row: str(row["policy_id"]) + ":" + str(row["date"]), axis=1) 
+        df_policy["hash_key"] = df_policy.apply(lambda row: str(row["policy_number"]) + ":" + str(row["end_date"]), axis=1)
         df_policy_add = df_policy  # assume all to add
         df_policy_update = pd.DataFrame()  # assume none to update
         if len(existing_hash_ids) > 0:
@@ -89,6 +93,6 @@ def import_policy(df_policy: pd.DataFrame, group_name: str):
             df_policy_update = df_policy.loc[df_policy['hash_key'].isin(existing_hash_ids)]
         print(f"service_calendar: adding={len(df_policy_add.index)}, updating={len(df_policy_update.index)}")
         if not df_policy_add.empty:
-            add_policy(df_policy_update)
+            add_policy(df_policy_add)
         if not df_policy_update.empty:
             update_policy(df_policy_update)
