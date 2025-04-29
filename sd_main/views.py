@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .forms import UploadPolicyForm
 from .import_data import handle_uploaded_file, import_policy
 
@@ -44,7 +44,7 @@ def upload_policy(request):
             df_policy = handle_uploaded_file(request_file)
             import_policy(df_policy, group_name)
             # html_table = df_policy.to_html()
-            return render(request, "sd_main/dash/upload.html", {'uploded_file_url': html_table})
+            return render(request, "sd_main/dash/upload.html", {'uploded_file_url': ''})
     # else:
     #    policy_form = UploadPolicyForm(request.GET)
     return render(request, "sd_main/dash/upload.html")

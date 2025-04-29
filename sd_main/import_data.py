@@ -2,6 +2,7 @@ import pandas as pd
 from io import StringIO
 from datetime import datetime
 from .models import Policy
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import connection
 from django.conf import settings
@@ -67,24 +68,25 @@ def get_existing_policies(group_name: str):
         policies_by_hash[hash_key] = existing_policy_row
     return policies_by_hash
 
-def add_policy(df_policy: pd.DataFrame):
+def add_policy(df_policy: pd.DataFrame, group_object):
     db_columns = ["policy_number", "policy_owner", "start_date", "end_date","owner_phone", "owner_email", "policy_type"]
     df_db_policy = df_policy[db_columns]
     policy_model_instances = [Policy(policy_number=row['policy_number'], policy_owner=row['policy_owner'],
                                      start_date=row['start_date'], end_date=row['end_date'],
                                      owner_phone = row['owner_phone'], owner_email = row['owner_email'],
-                                     policy_type = row['policy_type']) for _,row in df_db_policy.iterrows()]
+                                     policy_type = row['policy_type'], group = group_object) for _,row in df_db_policy.iterrows()]
     Policy.objects.bulk_create(policy_model_instances)
     return len(policy_model_instances)
 
-def update_policy(df_policy: pd.DataFrame):
+def update_policy(df_policy: pd.DataFrame, group_object: Group):
     return len(df_policy.index)
 
 def import_policy(df_policy: pd.DataFrame, group_name: str):
+    group_object = Group.objects.filter(name=group_name).first()
     policies_by_hash = get_existing_policies(group_name)
     existing_hash_ids = policies_by_hash.keys()
     df_policy = df_policy
-    if not df_policy.empty:
+    if not df_policy.empty and group_object:
         df_policy["hash_key"] = df_policy.apply(lambda row: str(row["policy_number"]) + ":" + str(row["end_date"]), axis=1)
         df_policy_add = df_policy  # assume all to add
         df_policy_update = pd.DataFrame()  # assume none to update
@@ -93,6 +95,6 @@ def import_policy(df_policy: pd.DataFrame, group_name: str):
             df_policy_update = df_policy.loc[df_policy['hash_key'].isin(existing_hash_ids)]
         print(f"service_calendar: adding={len(df_policy_add.index)}, updating={len(df_policy_update.index)}")
         if not df_policy_add.empty:
-            add_policy(df_policy_add)
+            add_policy(df_policy_add, group_object)
         if not df_policy_update.empty:
-            update_policy(df_policy_update)
+            update_policy(df_policy_update, group_object)
