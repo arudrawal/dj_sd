@@ -1,11 +1,23 @@
 import uuid
 from django.db import models
 from django.urls import reverse
-   
+
+class GroupSetting(models.Model):
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    value =  models.TextField(max_length=1024)
+    json_value =  models.JSONField()
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'name'], name='unique_group_setting')
+        ]
+    def __str__(self):
+        return f"{self.group} {self.name}"
+
 class Driver(models.Model):
     group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
-    driving_license = models.CharField(max_length=50)
     name = models.CharField(max_length=100)
+    driving_license = models.CharField(max_length=50)
     issue_date = models.DateField()
     expiry_date = models.DateField()
 

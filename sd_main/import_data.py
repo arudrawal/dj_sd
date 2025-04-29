@@ -1,6 +1,20 @@
 import pandas as pd
+from io import StringIO
 from datetime import datetime
 from .models import Policy
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import connection
+from django.conf import settings
+
+def get_engine():
+    # create_engine is a function from SQLAlchemy, not psycopg2 directly
+    user = settings.DATABASES['default']['USER']
+    password = settings.DATABASES['default']['PASSWORD']
+    database_name = settings.DATABASES['default']['NAME']
+    host = settings.DATABASES['default']['HOST']
+    port = settings.DATABASES['default']['PORT']
+    database_url = f'postgresql://{user}:{password}@{host}:{port}/{database_name}'
+    return create_engine(database_url, echo=False)
 
 def convert_ymd_to_date(val: str) -> datetime:
     return datetime.strptime(str(val), "%Y%m%d")
@@ -26,29 +40,55 @@ def read_file_csv(file: str, non_str:dict={}) -> pd.DataFrame:
     except BaseException as e:
         print(e)
         return pd.DataFrame()
-    
-def get_existing_policies():
-    """ Vendor specific unique hash (policy_id+end_date) """
-    policy_by_hash = {}
-    pol_dates = Policy.objects.all()
-    
-    for existing_cal_row in scal_dates:
-        hash_key = str(existing_cal_row.service_id) + ':' + existing_cal_row.date.strftime("%Y%m%d")
-        calendar_dates_by_service_date[hash_key] = existing_cal_row
-    return calendar_dates_by_service_date
 
-def import_policy(df_policy: pd.DataFrame):
-    policy_by_id_end_date = get_existing_calendar()
-    existing_service_ids = calendar_by_service_id.keys()
-    if not df_calendar.empty:
-        df_calendar_add = df_calendar  # assume all to add
-        df_calendar_update = pd.DataFrame()  # assume none to update
-        if len(existing_service_ids) > 0:
-            df_calendar_add = df_calendar.loc[~df_calendar['service_id'].isin(existing_service_ids)]
-            df_calendar_update = df_calendar.loc[df_calendar['service_id'].isin(existing_service_ids)]
-        print(f"service_calendar: adding={len(df_calendar_add.index)}, updating={len(df_calendar_update.index)}")
-        if not df_calendar_add.empty:
-            self.add_calendar(df_calendar_add)
-        if not df_calendar_update.empty:
-            self.update_calendar(df_calendar_update, calendar_by_service_id)
-    # calendar_by_service_id, calendar_by_row_id = self.get_existing_calendar()    
+def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
+    """
+    Reads the content of an uploaded file into a Pandas DataFrame.
+
+    Args:
+        file: An InMemoryUploadedFile object representing the uploaded file.
+
+    Returns:
+        A Pandas DataFrame containing the data from the file.
+    """
+    
+    file_content = file.read().decode('utf-8')
+    data = StringIO(file_content)
+    # df = pd.read_csv(data)
+    df = read_file_csv(data)
+    return df
+   
+def get_existing_policies(group_name: str):
+    """ Vendor specific unique hash (policy_number+end_date) """
+    policies_by_hash = {}
+    all_policies = Policy.objects.filter('group' == group_name)
+    for existing_policy_row in all_policies:
+        hash_key = str(existing_policy_row.policy_number) + ':' + existing_policy_row.end_date.strftime("%Y%m%d")
+        policies_by_hash[hash_key] = existing_policy_row
+    return policies_by_hash
+
+def add_policy(df_policy: pd.DataFrame):
+    db_columns = ["policy_number", "policy_owner", "start_date", "end_date","owner_phone", "owner_email", "policy_type"]
+    df_db_policy = df_policy[db_columns]
+    policy_model_instances = [Policy(**item) for item in df_db_policy]
+    Policy.objects.bulk_create(policy_model_instances)
+
+def update_policy(df_policy: pd.DataFrame):
+    pass
+
+def import_policy(df_policy: pd.DataFrame, group_name: str):
+    policies_by_hash = get_existing_policies(group_name)
+    existing_hash_ids = policies_by_hash.keys()
+    df_policy = df_policy
+    if not df_policy.empty:
+        df_policy["hash_key"] = df_policy.apply(lambda row: str(row["policy_id"]) + ":" + str(row["date"]), axis=1) 
+        df_policy_add = df_policy  # assume all to add
+        df_policy_update = pd.DataFrame()  # assume none to update
+        if len(existing_hash_ids) > 0:
+            df_policy_add = df_policy.loc[~df_policy['hash_key'].isin(existing_hash_ids)]
+            df_policy_update = df_policy.loc[df_policy['hash_key'].isin(existing_hash_ids)]
+        print(f"service_calendar: adding={len(df_policy_add.index)}, updating={len(df_policy_update.index)}")
+        if not df_policy_add.empty:
+            add_policy(df_policy_update)
+        if not df_policy_update.empty:
+            update_policy(df_policy_update)
