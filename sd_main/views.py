@@ -5,13 +5,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from .forms import UploadPolicyForm
 from .import_data import handle_uploaded_file, import_policy
+from .models import Policy
 
 # Create your views here.
 @login_required
 def index(request):
-    context_dict = {'page_title': 'Notifications', 'agency_name': ''}
+    context_dict = {'page_title': 'Notifications', 'agency_name': None, 'policies': None}
     if request.user.groups.all():
         context_dict['agency_name'] = request.user.groups.all()[0]
+    if context_dict['agency_name']:
+        policies = Policy.objects.filter(group=context_dict['agency_name'])
+    else:
+        policies = Policy.objects.all()
+    context_dict['policies'] = policies
     return render(request, 'sd_main/dash/notifications.html', context_dict)
 
 @login_required

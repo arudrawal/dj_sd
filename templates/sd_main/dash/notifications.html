@@ -38,11 +38,11 @@
                                 <input class="form-check-input" type="checkbox" value="1" data-kt-check="true" data-kt-check-target=".widget-13-check">
                             </div>
                         </th>
-                        <th class="min-w-150px">Order Id</th>
-                        <th class="min-w-140px">Country</th>
-                        <th class="min-w-120px">Date</th>
-                        <th class="min-w-120px">Company</th>
-                        <th class="min-w-120px">Total</th>
+                        <th class="min-w-150px">Policy</th>
+                        <th class="min-w-140px">Owner</th>
+                        <th class="min-w-120px">End Date</th>
+                        <th class="min-w-120px">Type</th>
+                        <th class="min-w-120px">Typr</th>
                         <th class="min-w-120px">Status</th>
                         <th class="min-w-100px text-end">Actions</th>
                     </tr>
@@ -51,227 +51,52 @@
 
                 <!--begin::Table body-->
                 <tbody>
+                    {% for policy in policies %}
                     <tr>
-                            <td>
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input widget-13-check" type="checkbox" value="1">
-                                </div>
-                            </td>
+                        <td>
+                            <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                <input class="form-check-input widget-13-check" type="checkbox" value="1">
+                            </div>
+                        </td>
+                        
+                        <td>
+                            <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{policy.policy_owner}}</a>
+                        </td>
+                        
+                        <td>
+                            <!--<a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Brasil</a> -->
+                            <span class="text-muted fw-semibold text-muted d-block fs-7">{{policy.policy_owner}}</span>
+                        </td>
+
+                        <td>
+                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{policy.end_date}}</a>
+                            <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span> -->
+                        </td>
+
+                        <td>
+                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{policy.policy_type}}</a>
+                            <!--<span class="text-muted fw-semibold text-muted d-block fs-7">Web, UI/UX Design</span> -->
+                        </td>
+
+                        <td class="text-gray-900 fw-bold text-hover-primary fs-6">{{policy.policy_type}}</td>
+
+                        <td>
+                            <span class="badge badge-light-success">{{policy.state}}</span>
+                        </td>             
+                        
+                        <td class="text-end">
+                            <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">View
+                                <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i></a>
                             
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">56037-XDER</a>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Brasil</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: PH</span>
-                            </td>
+                            <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
+                                <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i></a>
 
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">05/28/2020</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Intertico</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Web, UI/UX Design</span>
-                            </td>
-
-                            <td class="text-gray-900 fw-bold text-hover-primary fs-6">
-                                $3560                            </td>  
-
-                            <td>
-                                <span class="badge badge-light-success">Approved</span>
-                            </td>             
-                            
-                            <td class="text-end">
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">View
-                                    <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i></a>
-                                
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i></a>
-
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a>
-                            </td>
-                        </tr>
-                                            <tr>
-                            <td>
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input widget-13-check" type="checkbox" value="1">
-                                </div>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">05822-FXSP</a>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Belarus</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: BY</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">04/18/2021</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Agoda</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Houses &amp; Hotels</span>
-                            </td>
-
-                            <td class="text-gray-900 fw-bold text-hover-primary fs-6">
-                                $4850                            </td>  
-
-                            <td>
-                                <span class="badge badge-light-warning">In Progress</span>
-                            </td>             
-                            
-                            <td class="text-end">
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-                                
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>                                </a>
-                            </td>
-                        </tr>
-                                            <tr>
-                            <td>
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input widget-13-check" type="checkbox" value="1">
-                                </div>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">4472-QREX</a>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Phillipines</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: BH</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">07/23/2019</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">RoadGee</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Transportation</span>
-                            </td>
-
-                            <td class="text-gray-900 fw-bold text-hover-primary fs-6">
-                                $8376                            </td>  
-
-                            <td>
-                                <span class="badge badge-light-danger">Success</span>
-                            </td>             
-                            
-                            <td class="text-end">
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-                                
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>                                </a>
-                            </td>
-                        </tr>
-                                            <tr>
-                            <td>
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input widget-13-check" type="checkbox" value="1">
-                                </div>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">00347-BCLQ</a>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Argentina</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: BR</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">12/21/2021</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">The Hill</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Insurance</span>
-                            </td>
-
-                            <td class="text-gray-900 fw-bold text-hover-primary fs-6">
-                                $9486                            </td>  
-
-                            <td>
-                                <span class="badge badge-light-info">Rejected</span>
-                            </td>             
-                            
-                            <td class="text-end">
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-                                
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>                                </a>
-                            </td>
-                        </tr>
-                                            <tr>
-                            <td>
-                                <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input widget-13-check" type="checkbox" value="1">
-                                </div>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">59486-XDER</a>
-                            </td>
-                            
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Agoda</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: BT</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">05/28/2020</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span>
-                            </td>
-
-                            <td>
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Phillipines</a>
-                                <span class="text-muted fw-semibold text-muted d-block fs-7">Transportation</span>
-                            </td>
-
-                            <td class="text-gray-900 fw-bold text-hover-primary fs-6">
-                                $8476                            </td>  
-
-                            <td>
-                                <span class="badge badge-light-primary">Approved</span>
-                            </td>             
-                            
-                            <td class="text-end">
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-switch fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-                                
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
-                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>                                </a>
-
-                                <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
-                                    <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>                                </a>
-                            </td>
-                        </tr>
-                                    </tbody>
+                            <a href="#" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                                <i class="ki-duotone ki-trash fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
                 <!--end::Table body-->
             </table>
             <!--end::Table-->
