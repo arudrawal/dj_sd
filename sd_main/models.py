@@ -44,17 +44,16 @@ class Policy(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=False, blank=False)
     POLICY_STATUS = (
-        ('e', 'Expired'),
-        ('r', 'Renewal'),
-        ('c', 'Completed'),
-        ('n', 'Reserved'),
+        ('Expired', 'Expired'),
+        ('Renewal', 'Renewal'),
+        ('Completed', 'Completed'),
     )
 
     status = models.CharField(
-        max_length=1,
+        max_length=32,
         choices=POLICY_STATUS,
         blank=True,
-        default='r',
+        default='Renewal',
         help_text='Renewal pending',
     )
     owner_phone = models.CharField(max_length=100, null=True, blank=True)

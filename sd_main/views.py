@@ -36,21 +36,23 @@ def drivers(request):
 
 @login_required
 def upload_policy(request):
-    # if this is a POST request we need to process the form data
-    group_name = None
+    context_dict = {'page_title': 'Import Data', 'agency_name': ''}
     if request.user.groups.all():
-        group_name = request.user.groups.all()[0]
+        context_dict['agency_name'] = request.user.groups.all()[0]
+    # if this is a POST request we need to process the form data
     if request.method == "POST":
         # if the post request has a file under the input name 'policy_file', then save the file.
         request_file = request.FILES['policy_file'] if 'policy_file' in request.FILES else None
-        if request_file and group_name: # save attached file
+        if request_file and context_dict['agency_name']: # save attached file
             # fs = FileSystemStorage()
             # file = fs.save(request_file.name, request_file)
             # uploaded_file_url = fs.url(file)
             df_policy = handle_uploaded_file(request_file)
-            import_policy(df_policy, group_name)
+            add_count, update_count = import_policy(df_policy, context_dict['agency_name'])
+            context_dict['add_count'] = add_count
+            context_dict['update_count'] = update_count
             # html_table = df_policy.to_html()
-            return render(request, "sd_main/dash/upload.html", {'uploded_file_url': ''})
+            return render(request, "sd_main/dash/upload.html", context_dict)
     # else:
     #    policy_form = UploadPolicyForm(request.GET)
     return render(request, "sd_main/dash/upload.html")
