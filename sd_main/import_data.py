@@ -58,12 +58,14 @@ def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
     Returns:
         A Pandas DataFrame containing the data from the file.
     """
-    
-    file_content = file.read().decode('utf-8')
-    data1 = StringIO(file_content)
-    data_type = get_csv_data_type(data1)
-    data = StringIO(file_content)
-    df = read_file_csv(data, data_type)
+    try:
+        file_content = file.read().decode('utf-8')
+        data1 = StringIO(file_content)
+        data_type = get_csv_data_type(data1)
+        data = StringIO(file_content)
+        df = read_file_csv(data, data_type)
+    except:
+        df = pd.DataFrame()
     return df
    
 def get_existing_policies(group_name: str):

@@ -23,7 +23,9 @@
                                 <div class="card-footer justify-center">
                                     <input type="submit" value="Upload Policy Data" name="submit_policy_file">
                                     {% if add_count or update_count %}
-                                        <p>Ploicies uploaded: added:{{add_count}}, updated: {{ update_count }}</a></p>
+                                        <p>Ploicies uploaded: added:{{add_count}}, updated: {{ update_count }}</p>
+                                    {%elif error %}
+                                        <p>Error: {{ error }}</a></p>
                                     {% endif %}
                                     {# <a class="btn btn-link" href="#">Example link</a> #}
                                 </div>
