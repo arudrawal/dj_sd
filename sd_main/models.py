@@ -28,13 +28,18 @@ class Agency(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class AgencySetting(models.Model):
+    POLICY_CSV_MAP = 'policy_csv_map'
+    CUSTOMER_CSV_MAP = 'customer_csv_map'
+    ALER_CSV_MAP = 'alert_csv_map'
+    NAME_CHOICES = {
+        POLICY_CSV_MAP: POLICY_CSV_MAP,
+        CUSTOMER_CSV_MAP: CUSTOMER_CSV_MAP,
+        ALER_CSV_MAP: ALER_CSV_MAP,
+    }
     group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
-    NAME_CHOICES = [
-        ('agency_policy_csv_map', 'Policy Column Map'),
-    ]
     name = models.CharField(max_length=100, choices=NAME_CHOICES, blank=False)
-    value =  models.TextField(max_length=1024)
+    text_value =  models.TextField(max_length=1024)
     json_value = models.JSONField()
     class Meta:
         constraints = [
@@ -47,6 +52,7 @@ class AgencySetting(models.Model):
 class Customer(models.Model):
     group = models.ForeignKey("auth.Group", on_delete=models.CASCADE)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
+    company_account = models.CharField(max_length=128)
     name = models.CharField(max_length=128)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)

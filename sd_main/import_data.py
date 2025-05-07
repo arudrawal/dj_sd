@@ -67,7 +67,17 @@ def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
     except:
         df = pd.DataFrame()
     return df
-   
+
+def extract_customers(group:str, df_critical_alerts: pd.DataFrame):
+    group
+    pass
+
+def extract_policies(group:str, df_critical_alerts: pd.DataFrame):
+    pass
+
+def extract_alerts(group:str, df_critical_alerts: pd.DataFrame):
+    pass
+
 def get_existing_policies(group_name: str):
     """ Vendor specific unique hash (policy_number+end_date) """
     policies_by_hash = {}

@@ -10,6 +10,24 @@ AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0], 'group': GROU
             {'name': 'Bobs Agency', 'company': COMPANY_LIST[1], 'group': GROUPS[1]},
             {'name': 'Chucks Agency', 'company': COMPANY_LIST[2], 'group': GROUPS[2]},
         ]
+CUSTOMER_MAP = {
+    AGENCIES[0]['name']: {'Name': 'name', 'Billing Account': 'company_account', 'Email': 'email', 'Phone Number': 'phone'},
+    AGENCIES[1]['name']: {'Name': 'name', 'Billing Account': 'company_account', 'Email': 'email', 'Phone Number': 'phone'},
+    AGENCIES[2]['name']: {'Name': 'name', 'Billing Account': 'company_account', 'Email': 'email', 'Phone Number': 'phone'},
+}
+POLICY_MAP = {
+    AGENCIES[0]['name']: {'Policy': 'number', 'LOB': 'lob', 'Policy Start Date': 'start_date', 'Policy End Date': 'end_date'},
+    AGENCIES[1]['name']: {'Policy': 'number', 'LOB': 'lob', 'Policy Start Date': 'start_date', 'Policy End Date': 'end_date'},
+    AGENCIES[2]['name']: {'Policy': 'number', 'LOB': 'lob', 'Policy Start Date': 'start_date', 'Policy End Date': 'end_date'},
+}
+ALERT_MAP = {
+    AGENCIES[0]['name']: {'Alert Classification': 'alert_level', 'Due Date': 'due_date', 'Created Date': 'date_created', 'Status': 'work_status',
+                'Alert Category': 'alert_category', 'Alert Sub-Category': 'alert_sub_category'},
+    AGENCIES[1]['name']: {'Alert Classification': 'alert_level', 'Due Date': 'due_date', 'Created Date': 'date_created', 'Status': 'work_status',
+                'Alert Category': 'alert_category', 'Alert Sub-Category': 'alert_sub_category'},
+    AGENCIES[2]['name']: {'Alert Classification': 'alert_level', 'Due Date': 'due_date', 'Created Date': 'date_created', 'Status': 'work_status',
+                'Alert Category': 'alert_category', 'Alert Sub-Category': 'alert_sub_category'},
+}
 DOMAIN_EMAIL = 'shivark.com'
 AJAY_EMAIL = f'ajay@{DOMAIN_EMAIL}'
 MUKESH_EMAIL = f'mukesh@{DOMAIN_EMAIL}'
@@ -51,7 +69,8 @@ def create_other_users(user_list: list, db_groups: dict):
     from django.contrib.auth.models import User
     db_users = {}
     for user in user_list:
-        if not User.objects.filter(username=user['user_name']).exists():
+        db_user = User.objects.filter(username=user['user_name']).first()
+        if not db_user: # User.objects.filter(username=user['user_name']).exists():
             db_user = User.objects.create_user(user['user_name'], user['email'], user['password'])
             for user_group in user['groups']:
                 db_user.groups.add(db_groups[user_group])
@@ -71,12 +90,31 @@ def create_company():
 
 def create_agencies(agency_list: dict, company_dict: dict, group_dict: dict):
     from sd_main.models import Agency
-    db_agencies = {}
+    db_agencies_by_name = {}
     for agency in agency_list:
-        if not Agency.objects.filter(name=agency['name']).exists():
+        db_agency = Agency.objects.filter(name=agency['name']).first()
+        if not db_agency: # Agency.objects.filter(name=agency['name']).exists():
             db_agency = Agency.objects.create(name=agency['name'], group=group_dict[agency['group']], company=company_dict[agency['company']])
-            db_agencies[agency['name']] = db_agency
-    return db_agencies
+        db_agencies_by_name[agency['name']] = db_agency
+    return db_agencies_by_name
+
+def create_agency_settings(db_agencies_by_name):
+    from sd_main.models import AgencySetting
+    for agency_name, customer_csv_map in CUSTOMER_MAP.items():
+        db_agency = db_agencies_by_name[agency_name]
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP).exists():
+            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP, json_value=customer_csv_map)
+    
+    for agency_name, policy_csv_map in POLICY_MAP.items():
+        db_agency = db_agencies_by_name[agency_name]
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.POLICY_CSV_MAP).exists():
+            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.POLICY_CSV_MAP, json_value=policy_csv_map)
+
+    for agency_name, alert_csv_map in ALERT_MAP.items():
+        db_agency = db_agencies_by_name[agency_name]
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).exists():
+            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
+    
 
 if __name__ == '__main__':
    new_root = os.path.join(os.path.dirname(__file__), '..')
@@ -94,3 +132,5 @@ if __name__ == '__main__':
    print (f"Created Companies: {db_companies.keys()}")
    db_agencies = create_agencies(AGENCIES, db_companies, db_groups)
    print (f"Created Agencies: {db_agencies.keys()}")
+   create_agency_settings(db_agencies)
+   print (f"Created Agency Settings")

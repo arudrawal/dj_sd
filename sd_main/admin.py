@@ -12,7 +12,7 @@ class AgencyAdmin(admin.ModelAdmin):
     list_display = ('name', 'company', 'contact')
 
 class AgencySettingAdmin(admin.ModelAdmin):
-    list_display = ('agency', 'name', 'value', 'json_value')
+    list_display = ('agency', 'name', 'text_value', 'json_value')
 
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone', 'agency')
