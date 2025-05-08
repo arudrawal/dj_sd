@@ -1,4 +1,0 @@
-policy_number,policy_owner,start_date,end_date,policy_type,action,owner_phone,owner_email
-1001,Ajay Rudrawal,2025-01-01,2025-06-30,auto,renewal,6505952087,ajay@shivark.com
-1002,Mukesh Grover,2025-02-01,2025-07-30,auto,renewal,6505952087,mukesh@shivark.com
-1003,John Doe,2025-03-01,2025-08-30,auto,renewal,,

@@ -3,6 +3,7 @@ from io import StringIO
 from datetime import datetime
 from .models import Policy
 from django.contrib.auth.models import Group
+from .models import Customer, AgencySetting, Policy
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import connection
 from django.conf import settings
@@ -48,7 +49,7 @@ def read_file_csv(file, data_type:dict={}) -> pd.DataFrame:
         print(e)
         return pd.DataFrame()
 
-def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
+def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
     """
     Reads the content of an uploaded file into a Pandas DataFrame.
 
@@ -64,12 +65,14 @@ def handle_uploaded_file(file: InMemoryUploadedFile) -> pd.DataFrame:
         data_type = get_csv_data_type(data1)
         data = StringIO(file_content)
         df = read_file_csv(data, data_type)
+        df.columns = df.columns.str.lower() # all column names to lowercase
     except:
         df = pd.DataFrame()
     return df
 
-def extract_customers(group:str, df_critical_alerts: pd.DataFrame):
-    group
+def extract_customers(user_group:Group, df_input: pd.DataFrame):
+    customer_ag2db_map = AgencySetting.objects.filter(group=user_group, name=AgencySetting.CUSTOMER_CSV_MAP).first()
+    customer_ag2db_map
     pass
 
 def extract_policies(group:str, df_critical_alerts: pd.DataFrame):

@@ -6,7 +6,13 @@
     {% url 'upload' as upload_url %}
     <!--begin::Title-->
     <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-        {{page_title}}  {{agency_name}}
+        {%if agency %}
+            {{agency.name}}: {{page_title}}
+        {% elif group %}
+            {{group}}: {{page_title}}
+        {% else %}
+            {{page_title}}
+        {% endif %}
     </h1>
     <!--end::Title-->
     {% comment %}

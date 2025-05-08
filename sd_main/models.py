@@ -14,9 +14,9 @@ class Company(models.Model):
 
 """ Insurance Agency - between customer and carrier. """
 class Agency(models.Model):
-    name = models.CharField(max_length=128, primary_key=True)
     group = models.ForeignKey("auth.Group", on_delete=models.CASCADE) # one => one with group
     company = models.ForeignKey("Company", on_delete=models.CASCADE) # many=>one [one company for many agencies]
+    name = models.CharField(max_length=128, unique=True)
     number = models.CharField(max_length=128)
     contact = models.CharField(max_length=128)
     contact_email = models.CharField(max_length=128)
