@@ -103,13 +103,10 @@ def upload_policy(request):
                 context_dict['add_count'] = add_count
                 context_dict['update_count'] = update_count
                 # html_table = df_policy.to_html()
-                return render(request, "sd_main/dash/upload.html", context_dict)
+                # return render(request, "sd_main/dash/upload.html", context_dict)
             else: # file is rejected
                 context_dict['add_count'] = context_dict['update_count'] = 0
                 context_dict['error'] = f'{request_file.name}: empty or invalid file!'
-                return render(request, "sd_main/dash/upload.html", context_dict)
-
-    # else:
-    #    policy_form = UploadPolicyForm(request.GET)
-    return render(request, "sd_main/dash/upload.html")
+                # return render(request, "sd_main/dash/upload.html", context_dict)
+    return render(request, "sd_main/dash/upload.html", context=context_dict)
 
