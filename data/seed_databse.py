@@ -11,9 +11,9 @@ AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0], 'group': GROU
             {'name': 'Chucks Agency', 'company': COMPANY_LIST[2], 'group': GROUPS[2]},
         ]
 CUSTOMER_MAP = {
-    AGENCIES[0]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone'},
-    AGENCIES[1]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone'},
-    AGENCIES[2]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone'},
+    AGENCIES[0]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
+    AGENCIES[1]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
+    AGENCIES[2]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
 }
 POLICY_MAP = {
     AGENCIES[0]['name']: {str.lower('Policy'): 'number', str.lower('LOB'): 'lob', str.lower('Policy Start Date'): 'start_date', str.lower('Policy End Date'): 'end_date'},

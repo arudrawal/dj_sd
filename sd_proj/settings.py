@@ -18,7 +18,7 @@ TEMPLATE_DIR= os.path.join(BASE_DIR,"templates")
 STATIC_DIR = os.path.join(BASE_DIR,"static")
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-LOGIN_REDIRECT_URL = "index"
+LOGIN_REDIRECT_URL = "login_agency"
 LOGOUT_REDIRECT_URL = "login"
 
 # Quick-start development settings - unsuitable for production
