@@ -39,6 +39,11 @@ USERS = [{'user_name':'ajay', 'email': AJAY_EMAIL, 'password': SUPER_PASS, 'grou
          {'user_name':'mukesh', 'email': MUKESH_EMAIL, 'password': SUPER_PASS, 'groups': [GROUPS[0]]},
          {'user_name':'archana', 'email': ARCHANA_EMAIL, 'password': SUPER_PASS, 'groups': [GROUPS[0]]},
         ]
+AGENCY_USERS = {
+    AGENCIES[0]['name']: ['ajay', 'mukesh', 'archana'],
+    AGENCIES[1]['name']: ['ajay'],
+    AGENCIES[2]['name']: ['ajay'],
+}
 
 def create_admin_user():
     from django.contrib.auth.models import User
@@ -100,6 +105,19 @@ def create_agencies(agency_list: dict, company_dict: dict, group_dict: dict):
             db_agency = Agency.objects.create(name=agency['name'], company=company_dict[agency['company']])
         db_agencies_by_name[agency['name']] = db_agency
     return db_agencies_by_name
+
+def create_agency_users():
+    from sd_main.models import Agency, AgencyUser
+    from django.contrib.auth.models import User
+    for agency_name in AGENCY_USERS.keys():
+        db_agency = Agency.objects.filter(name=agency_name).first()
+        if db_agency:
+            for user_name in AGENCY_USERS[agency_name]:
+                db_user = User.objects.filter(name=user_name).first()
+                if db_user:
+                    db_au = AgencyUser.objects.filter(agency=db_agency, user=db_user).first()
+                    if not db_au:
+                        db_au = AgencyUser.objects.create(agency=db_agency, user=db_user)
 
 def create_agency_settings(db_agencies_by_name):
     from sd_main.models import AgencySetting
