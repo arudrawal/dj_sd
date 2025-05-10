@@ -6,9 +6,9 @@ SUPER_USER = 'admin'
 SUPER_PASS = 'secret1#'
 COMPANY_LIST = ['Farmers', 'State Farm', 'All State']
 GROUPS = ['asharma_group', 'bobs_group', 'chucks_group']
-AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0], 'group': GROUPS[0]},
-            {'name': 'Bobs Agency', 'company': COMPANY_LIST[1], 'group': GROUPS[1]},
-            {'name': 'Chucks Agency', 'company': COMPANY_LIST[2], 'group': GROUPS[2]},
+AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0]},
+            {'name': 'Bobs Agency', 'company': COMPANY_LIST[1]},
+            {'name': 'Chucks Agency', 'company': COMPANY_LIST[2]},
         ]
 CUSTOMER_MAP = {
     AGENCIES[0]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
@@ -97,7 +97,7 @@ def create_agencies(agency_list: dict, company_dict: dict, group_dict: dict):
     for agency in agency_list:
         db_agency = Agency.objects.filter(name=agency['name']).first()
         if not db_agency: # Agency.objects.filter(name=agency['name']).exists():
-            db_agency = Agency.objects.create(name=agency['name'], group=group_dict[agency['group']], company=company_dict[agency['company']])
+            db_agency = Agency.objects.create(name=agency['name'], company=company_dict[agency['company']])
         db_agencies_by_name[agency['name']] = db_agency
     return db_agencies_by_name
 
@@ -106,17 +106,17 @@ def create_agency_settings(db_agencies_by_name):
     for agency_name, customer_csv_map in CUSTOMER_MAP.items():
         db_agency = db_agencies_by_name[agency_name]
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP).exists():
-            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP, json_value=customer_csv_map)
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP, json_value=customer_csv_map)
     
     for agency_name, policy_csv_map in POLICY_MAP.items():
         db_agency = db_agencies_by_name[agency_name]
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.POLICY_CSV_MAP).exists():
-            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.POLICY_CSV_MAP, json_value=policy_csv_map)
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.POLICY_CSV_MAP, json_value=policy_csv_map)
 
     for agency_name, alert_csv_map in ALERT_MAP.items():
         db_agency = db_agencies_by_name[agency_name]
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).exists():
-            AgencySetting.objects.create(group=db_agency.group, agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
     
 
 if __name__ == '__main__':

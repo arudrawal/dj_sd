@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 from .forms import UploadPolicyForm
 from .forms import AgencyForm
 
-from .import_data import convert_to_dataframe, import_policy, import_customer, extract_by_csv_map
+from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 from .models import Agency, AgencySetting, Policy
 
 def get_common_context(request, page_title: str):
@@ -85,23 +85,30 @@ def upload_policy(request):
     if request.method == "POST":
         # if the post request has a file under the input name 'policy_file', then save the file.
         request_file = request.FILES['policy_file'] if 'policy_file' in request.FILES else None
-        if request_file and context_dict['group']: # save attached file
+        if request_file and context_dict['agency']: # save attached file
+            db_agency = Agency.objects.filter(name=context_dict['agency']).first()
             # fs = FileSystemStorage()
             # file = fs.save(request_file.name, request_file)
             # uploaded_file_url = fs.url(file)
             df_agency_upload = convert_to_dataframe(request_file)
-            if len(df_policy.index):
-                customer_map = AgencySetting.objects.filter(group=context_dict['group'], name=AgencySetting.CUSTOMER_CSV_MAP).first()
+            if len(df_agency_upload.index):
+                customer_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP).first()
                 df_customer = extract_by_csv_map(df_agency_upload, customer_map)
+                add_cust, update_cust = 0
                 if len(df_customer.index):
-                    add_cus_count, update_cust_count = import_customer(df_customer, customer_map, context_dict['group'])
+                    add_cust, update_cust = import_customer(df_customer, db_agency)
                 policy_map = AgencySetting.objects.filter(group=context_dict['group'], name=AgencySetting.POLICY_CSV_MAP).first()
                 df_policy = extract_by_csv_map(df_agency_upload, policy_map)
+                add_olicy, update_policy = 0
+                if len(df_policy.index):
+                    add_olicy, update_policy = import_policy(df_policy, db_agency)
                 alert_map = AgencySetting.objects.filter(group=context_dict['group'], name=AgencySetting.ALER_CSV_MAP).first()
                 df_alert = extract_by_csv_map(df_agency_upload, alert_map)
-                add_count, update_count = import_policy(df_agency_upload, context_dict['group'])
-                context_dict['add_count'] = add_count
-                context_dict['update_count'] = update_count
+                add_alert, update_alert = 0
+                if len(df_alert.index):
+                    add_alert, update_alert = import_alert(df_alert, db_agency)
+                context_dict['add_count'] = add_alert
+                context_dict['update_count'] = update_alert
                 # html_table = df_policy.to_html()
                 # return render(request, "sd_main/dash/upload.html", context_dict)
             else: # file is rejected
