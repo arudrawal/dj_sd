@@ -48,10 +48,10 @@ AGENCY_USERS = {
 def create_admin_user():
     from django.contrib.auth.models import User
     # Admin user
-    if not User.objects.filter(username=SUPER_USER).exists():
+    db_admin = User.objects.filter(username=SUPER_USER).first()
+    if not db_admin:
         db_admin = User.objects.create_superuser(username=SUPER_USER, email=AJAY_EMAIL, password=SUPER_PASS)
-        return db_admin
-    return User.objects.filter(username=SUPER_USER).first()
+    return db_admin
 
 def create_groups(group_list: list):
     from django.contrib.auth.models import Group
@@ -112,12 +112,16 @@ def create_agency_users():
     for agency_name in AGENCY_USERS.keys():
         db_agency = Agency.objects.filter(name=agency_name).first()
         if db_agency:
-            for user_name in AGENCY_USERS[agency_name]:
-                db_user = User.objects.filter(name=user_name).first()
+            for uname in AGENCY_USERS[agency_name]:
+                db_user = User.objects.filter(username=uname).first()
                 if db_user:
                     db_au = AgencyUser.objects.filter(agency=db_agency, user=db_user).first()
                     if not db_au:
-                        db_au = AgencyUser.objects.create(agency=db_agency, user=db_user)
+                        db_au = AgencyUser(agency=db_agency, user=db_user)
+                        db_au.save()
+                        print(f"Added User={uname}, to Agency={agency_name}, ")
+                    else:
+                        print(f"Existed User={uname} to Agency={agency_name}")
 
 def create_agency_settings(db_agencies_by_name):
     from sd_main.models import AgencySetting
@@ -140,11 +144,11 @@ def create_agency_settings(db_agencies_by_name):
 if __name__ == '__main__':
    new_root = os.path.join(os.path.dirname(__file__), '..')
    print (f"New root: {new_root}")
-   exit
    sys.path.append(new_root)
    os.environ['DJANGO_SETTINGS_MODULE'] = 'sd_proj.settings'
    django.setup()
    create_admin_user()
+
    db_groups = create_groups(GROUPS)
    print (f"Created Groups: {db_groups.keys()}")
    db_users = create_other_users(USERS, db_groups)
@@ -155,3 +159,6 @@ if __name__ == '__main__':
    print (f"Created Agencies: {db_agencies.keys()}")
    create_agency_settings(db_agencies)
    print (f"Created Agency Settings")
+   create_agency_users()
+   print (f"Created Agency Users")
+

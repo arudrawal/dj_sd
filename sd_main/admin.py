@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, Customer, Agency, AgencySetting
+from .models import Company, Customer, Agency, AgencySetting, AgencyUser
 from .models import Driver, Vehicle, Policy, PolicyDocument
 
 # Register your models here.
@@ -23,6 +23,7 @@ class PolicyAdmin(admin.ModelAdmin):
 # Register the admin class with the associated model
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Agency, AgencyAdmin)
+admin.site.register(AgencyUser)
 admin.site.register(AgencySetting, AgencySettingAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Policy, PolicyAdmin)

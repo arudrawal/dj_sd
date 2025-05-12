@@ -27,17 +27,16 @@ class Agency(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     # many-rows=>one-company [one company for many agencies]
     company = models.ForeignKey("Company", on_delete=models.CASCADE)
+    # users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='AgencyUser')
 
 """ Insurance Agency - users assigned. """
 class AgencyUser(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='id')
     active = models.BooleanField(default=True)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # many-rows=>one-company [one company for many agencies]
-    
 
 class AgencySetting(models.Model):
     POLICY_CSV_MAP = 'policy_csv_map'

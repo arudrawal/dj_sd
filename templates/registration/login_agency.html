@@ -30,9 +30,9 @@
             Authorized to work with multiple agencies.
         </label>
         <br/>
-        <select name='agency' class="form-select form-select-lg form-select-solid" data-control="select2" data-placeholder="Select an Agency">
+        <select name='agency_name' class="form-select form-select-lg form-select-solid" data-control="select2" data-placeholder="Select an Agency">
             <option></option>
-            {%for agency in agencies %}
+            {%for agency in agency_list %}
                 <option value="{{agency.name}}">{{agency.name}}</option>
             {% endfor %}
         </select>
