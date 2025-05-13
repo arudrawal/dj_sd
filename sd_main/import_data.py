@@ -66,7 +66,7 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
         data = StringIO(file_content)
         df = read_file_csv(data, data_type)
         df.columns = df.columns.str.lower() # all column names to lowercase
-        df.columns = df.columns.rename(lambda x: x.replace(' ', '_'), axis=1) # replace space with '_'
+        df.columns = df.columns.str.replace(' ', '_') # replace space with '_'
     except:
         df = pd.DataFrame()
     return df

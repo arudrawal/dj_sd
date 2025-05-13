@@ -62,10 +62,10 @@ class AgencySetting(models.Model):
 class Customer(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
-    company_account = models.CharField(max_length=128)
-    email = models.CharField(max_length=128)
-    phone = models.CharField(max_length=128)
-    dob = models.DateField()
+    company_account = models.CharField(max_length=128, null=True)
+    email = models.CharField(max_length=128, null=True)
+    phone = models.CharField(max_length=128, null=True)
+    dob = models.DateField(null=True)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,12 +91,12 @@ class Policy(models.Model):
 class PolicyAlert(models.Model):
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE) # multiple alerts => one customers
     policy = models.ForeignKey("Policy", on_delete=models.CASCADE) # one alert =>one policy
-    alert_level = models.CharField("Critical/Pending", max_length=128)
-    due_date = models.DateField(null=True, blank=True)
-    created_date = models.DateField(null=False, blank=False)
-    work_status = models.CharField("InProgress/New", max_length=128)
-    alert_category = models.CharField("Alert Reason Summary", max_length=128)
-    alert_sub_category = models.CharField("Alert Reason details", max_length=512)
+    alert_level = models.CharField(max_length=128) # "Critical/Pending"
+    due_date = models.DateField(null=True, blank=False)
+    created_date = models.DateField(null=True, blank=False)
+    work_status = models.CharField(max_length=128, null=True) # InProgress/New,
+    alert_category = models.CharField(max_length=128, null=True) # Alert Reason Summary
+    alert_sub_category = models.CharField(max_length=512, null=True) # Alert Reason details
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # multiple alerts => one agency
     # ManyToManyField used because vehicle can have many policies and policy can cover many vehicles.
     # vehicle = models.ManyToManyField(

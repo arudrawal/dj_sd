@@ -59,15 +59,30 @@ POLICY_MAP = {
     },
 }
 ALERT_MAP = {
-    AGENCIES[0]['name']: {str.lower('alert_classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
-                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert_Sub-Category'): 'alert_sub_category'},
-    AGENCIES[1]['name']: {str.lower('Alert_Classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
-                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert Sub-Category'): 'alert_sub_category'},
-    AGENCIES[2]['name']: {str.lower('Alert_Classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
-                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert_Sub-Category'): 'alert_sub_category'},
+    AGENCIES[0]['name']: {
+        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
+        str.lower('Due Date').replace(' ', '_'): 'due_date',
+        str.lower('Created Date').replace(' ', '_'): 'created_date', 
+        str.lower('Status'): 'work_status',
+        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
+        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
+    },
+    AGENCIES[1]['name']: {
+        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
+        str.lower('Due Date').replace(' ', '_'): 'due_date',
+        str.lower('Created Date').replace(' ', '_'): 'created_date', 
+        str.lower('Status'): 'work_status',
+        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
+        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
+    },
+    AGENCIES[2]['name']: {
+        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
+        str.lower('Due Date').replace(' ', '_'): 'due_date',
+        str.lower('Created Date').replace(' ', '_'): 'created_date', 
+        str.lower('Status'): 'work_status',
+        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
+        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
+    },
 }
 DOMAIN_EMAIL = 'shivark.com'
 AJAY_EMAIL = f'ajay@{DOMAIN_EMAIL}'
