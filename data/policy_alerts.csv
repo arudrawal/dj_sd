@@ -1,4 +1,4 @@
-number,work_status,alert_level,due_date,date_created,alert_category,alert_sub_category
+number,work_status,alert_level,due_date,created_date,alert_category,alert_sub_category
 1001,In Process,Critical,05/20/2025,04/20/2025,Retention,Pending Non-Renewals - Company Requested
 1002,In Process,Critical,05/22/2025,04/25/2025,Pending Cancellation for NonPay,Billing Pending Cancellations
 1003,New,Critical,05/39/2025,04/29/2025,Required Documents,Missing Documents

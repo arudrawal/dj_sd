@@ -1,4 +1,4 @@
-number,name,company_account,start_date,end_date,lob,work_status,phone,email,alert_level,due_date,date_created,alert_category,alert_sub_category
+number,name,company_account,start_date,end_date,lob,work_status,phone,email,alert_level,due_date,created_date,alert_category,alert_sub_category
 1001,Ajay Rudrawal,FA-001,2025-01-01,2025-06-30,auto,In Process,6505952087,ajay@shivark.com,Critical,05/10/2025,04/20/2025,Retention,Pending Non-Renewals - Company Requested
 1002,Mukesh Grover,FA-002,2025-02-01,2025-07-30,auto,In Process,6505952087,mukesh@shivark.com,Critical,05/11/2025,04/25/2025,Pending Cancellation for NonPay,Billing Pending Cancellations
 1003,John Doe,FA-003,2025-03-01,2025-08-30,auto,New,jd@shivark.com,Critical,05/14/2025,04/29/2025,Required Documents,Missing Documents
