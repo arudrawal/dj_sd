@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.urls import reverse
 from django.conf import settings
+from . import constants
 
 """ Insurance Carrier. """
 class Company(models.Model):
@@ -61,11 +62,11 @@ class AgencySetting(models.Model):
 """ Customers are policy owners, can own multiple polices. """
 class Customer(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
-    company_account = models.CharField(max_length=128, null=True)
-    email = models.CharField(max_length=128, null=True)
-    phone = models.CharField(max_length=128, null=True)
-    dob = models.DateField(null=True)
+    name = models.CharField(max_length=128, db_column=constants.CUSTOMER_NAME_COLUMN)
+    company_account = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_COMPANY_ACCOUNT)
+    email = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_EMAIL_COLUMN)
+    phone = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_PHONE_COLUMN)
+    dob = models.DateField(null=True, db_column=constants.CUSTOMER_DOB_COLUMN)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -77,26 +78,26 @@ class Policy(models.Model):
     #                      help_text="Unique ID for this particular policy across whole database")
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE) # many=>one: multiple policies for one customer
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # many=>one: multiple policeis for one agency
-    number = models.CharField("Policy Number", max_length=128)
-    start_date = models.DateField(null=True, blank=False)
-    end_date = models.DateField(null=True, blank=False)
+    number = models.CharField("Policy Number", max_length=128, db_column=constants.POLICY_NUMBER_COLUMN)
+    start_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_START_DATE_COLUMN)
+    end_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_END_DATE_COLUMN)
     LOB = (
         ('Auto', 'Auto'),
         ('Home', 'Home'),
         ('Life', 'Life'),
     )
-    lob = models.CharField(max_length=32, choices=LOB, default='auto', blank=False, help_text='Policy business type')
+    lob = models.CharField(max_length=32, choices=LOB, default='auto', blank=False, help_text='Policy business type', db_column=constants.POLICY_LOB_COLUMN)
 
 # Alert for a specific Policy
 class PolicyAlert(models.Model):
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE) # multiple alerts => one customers
     policy = models.ForeignKey("Policy", on_delete=models.CASCADE) # one alert =>one policy
-    alert_level = models.CharField(max_length=128) # "Critical/Pending"
-    due_date = models.DateField(null=True, blank=False)
-    created_date = models.DateField(null=True, blank=False)
-    work_status = models.CharField(max_length=128, null=True) # InProgress/New,
-    alert_category = models.CharField(max_length=128, null=True) # Alert Reason Summary
-    alert_sub_category = models.CharField(max_length=512, null=True) # Alert Reason details
+    alert_level = models.CharField(max_length=128, db_column=constants.POLICY_ALERT_LEVEL_COLUMN) # "Critical/Pending"
+    due_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_ALERT_DUE_DATE_COLUMN)
+    created_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_ALERT_CREATED_DATE_COLUMN)
+    work_status = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_WORK_STATUS_COLUMN) # InProgress/New,
+    alert_category = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_CATEGORY_COLUMN) # Alert Reason Summary
+    alert_sub_category = models.CharField(max_length=512, null=True, db_column=constants.POLICY_ALERT_SUB_CATEGORY_COLUMN) # Alert Reason details
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # multiple alerts => one agency
     # ManyToManyField used because vehicle can have many policies and policy can cover many vehicles.
     # vehicle = models.ManyToManyField(
