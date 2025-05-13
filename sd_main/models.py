@@ -93,7 +93,7 @@ class PolicyAlert(models.Model):
     policy = models.ForeignKey("Policy", on_delete=models.CASCADE) # one alert =>one policy
     alert_level = models.CharField("Critical/Pending", max_length=128)
     due_date = models.DateField(null=True, blank=True)
-    date_created = models.DateField(null=False, blank=False)
+    created_date = models.DateField(null=False, blank=False)
     work_status = models.CharField("InProgress/New", max_length=128)
     alert_category = models.CharField("Alert Reason Summary", max_length=128)
     alert_sub_category = models.CharField("Alert Reason details", max_length=512)

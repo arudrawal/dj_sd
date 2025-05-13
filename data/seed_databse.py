@@ -10,26 +10,64 @@ AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0]},
             {'name': 'Bobs Agency', 'company': COMPANY_LIST[1]},
             {'name': 'Chucks Agency', 'company': COMPANY_LIST[2]},
         ]
+#    Raw Agency_map: Policy,Name,Billing Account,Policy Start Date,Policy End Date,LOB,Status,Phone Number,Email,Alert Classification,Due Date,Created Date,Alert Category,Alert Sub-Category
+#  Apply conversion: Convert all to lower and replace space by '_'
+# Xlated Agency_map: policy,name,billing_account,policy_start_date,policy_end_date,lob,status,phone_number,email,alert_classification,due_date,created_date,alert_category,alert_sub-category
+# database_map: number,name,company_account,start_date,end_date,lob,work_status,phone,email,alert_level,due_date,date_created,alert_category,alert_sub_category
+
 CUSTOMER_MAP = {
-    AGENCIES[0]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
-    AGENCIES[1]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
-    AGENCIES[2]['name']: {str.lower('Name'): 'name', str.lower('Billing Account'): 'company_account', str.lower('Email'): 'email', str.lower('Phone Number'): 'phone', str.lower('DOB'): 'dob'},
+    AGENCIES[0]['name']: {
+        str.lower('Name'): 'name', 
+        str.lower('Billing Account').replace(' ', '_' ): 'company_account', 
+        str.lower('Email'): 'email', 
+        str.lower('Phone Number').replace(' ', '_'): 'phone', 
+        str.lower('DOB'): 'dob',
+    },
+    AGENCIES[1]['name']: {
+        str.lower('Name'): 'name', 
+        str.lower('Billing Account').replace(' ', '_' ): 'company_account', 
+        str.lower('Email'): 'email', 
+        str.lower('Phone Number').replace(' ', '_'): 'phone', 
+        str.lower('DOB'): 'dob',
+    },
+    AGENCIES[2]['name']: {
+        str.lower('Name'): 'name', 
+        str.lower('Billing Account').replace(' ', '_'): 'company_account', 
+        str.lower('email'): 'email', 
+        str.lower('Phone Number').replace(' ', '_'): 'phone', 
+        str.lower('DOB'): 'dob',
+    },
 }
 POLICY_MAP = {
-    AGENCIES[0]['name']: {str.lower('Policy'): 'number', str.lower('LOB'): 'lob', str.lower('Policy Start Date'): 'start_date', str.lower('Policy End Date'): 'end_date'},
-    AGENCIES[1]['name']: {str.lower('Policy'): 'number', str.lower('LOB'): 'lob', str.lower('Policy Start Date'): 'start_date', str.lower('Policy End Date'): 'end_date'},
-    AGENCIES[2]['name']: {str.lower('Policy'): 'number', str.lower('LOB'): 'lob', str.lower('Policy Start Date'): 'start_date', str.lower('Policy End Date'): 'end_date'},
+    AGENCIES[0]['name']: {
+        str.lower('Policy'): 'number', 
+        str.lower('LOB'): 'lob', 
+        str.lower('Policy Start Date').replace(' ', '_'): 'start_date',
+        str.lower('Policy End Date').replace(' ', '_'): 'end_date',
+    },
+    AGENCIES[1]['name']: {
+        str.lower('Policy'): 'number', 
+        str.lower('LOB'): 'lob', 
+        str.lower('Policy Start Date'): 'start_date', 
+        str.lower('Policy End Date'): 'end_date',
+    },
+    AGENCIES[2]['name']: {
+        str.lower('Policy'): 'number',
+        str.lower('LOB'): 'lob',
+        str.lower('Policy Start Date').replace(' ', '_'): 'start_date',
+        str.lower('Policy End Date').replace(' ', '_'): 'end_date'
+    },
 }
 ALERT_MAP = {
-    AGENCIES[0]['name']: {str.lower('Alert Classification'): 'alert_level', str.lower('Due Date'): 'due_date', 
-                        str.lower('Created Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert Category'): 'alert_category', str.lower('Alert Sub-Category'): 'alert_sub_category'},
-    AGENCIES[1]['name']: {str.lower('Alert Classification'): 'alert_level', str.lower('Due Date'): 'due_date', 
-                        str.lower('Created Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert Category'): 'alert_category', str.lower('Alert Sub-Category'): 'alert_sub_category'},
-    AGENCIES[2]['name']: {str.lower('Alert Classification'): 'alert_level', str.lower('Due Date'): 'due_date', 
-                        str.lower('Created Date'): 'date_created', str.lower('Status'): 'work_status',
-                        str.lower('Alert Category'): 'alert_category', str.lower('Alert Sub-Category'): 'alert_sub_category'},
+    AGENCIES[0]['name']: {str.lower('alert_classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
+                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
+                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert_Sub-Category'): 'alert_sub_category'},
+    AGENCIES[1]['name']: {str.lower('Alert_Classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
+                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
+                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert Sub-Category'): 'alert_sub_category'},
+    AGENCIES[2]['name']: {str.lower('Alert_Classification'): 'alert_level', str.lower('Due_Date'): 'due_date',
+                        str.lower('Created_Date'): 'date_created', str.lower('Status'): 'work_status',
+                        str.lower('Alert_Category'): 'alert_category', str.lower('Alert_Sub-Category'): 'alert_sub_category'},
 }
 DOMAIN_EMAIL = 'shivark.com'
 AJAY_EMAIL = f'ajay@{DOMAIN_EMAIL}'

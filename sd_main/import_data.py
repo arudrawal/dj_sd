@@ -66,6 +66,7 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
         data = StringIO(file_content)
         df = read_file_csv(data, data_type)
         df.columns = df.columns.str.lower() # all column names to lowercase
+        df.columns = df.columns.rename(lambda x: x.replace(' ', '_'), axis=1) # replace space with '_'
     except:
         df = pd.DataFrame()
     return df
@@ -73,7 +74,7 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
 def extract_by_csv_map(df_input: pd.DataFrame, ag2db_map: dict):
     # customer_ag2db_map = AgencySetting.objects.filter(group=user_group, name=AgencySetting.CUSTOMER_CSV_MAP).first()
     df_output = pd.DataFrame()
-    for ag_col,db_col in ag2db_map:
+    for ag_col,db_col in ag2db_map.items():
         if ag_col in df_input.columns:
             df_output[db_col] = df_input[ag_col]
     return df_output
