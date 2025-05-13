@@ -34,7 +34,7 @@ class Agency(models.Model):
 class AgencyUser(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='id')
-    active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -98,6 +98,7 @@ class PolicyAlert(models.Model):
     work_status = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_WORK_STATUS_COLUMN) # InProgress/New,
     alert_category = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_CATEGORY_COLUMN) # Alert Reason Summary
     alert_sub_category = models.CharField(max_length=512, null=True, db_column=constants.POLICY_ALERT_SUB_CATEGORY_COLUMN) # Alert Reason details
+    is_active = models.BooleanField(default=True, db_column=constants.POLICY_ALERT_IS_ACTIVE_COLUMN)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # multiple alerts => one agency
     # ManyToManyField used because vehicle can have many policies and policy can cover many vehicles.
     # vehicle = models.ManyToManyField(
