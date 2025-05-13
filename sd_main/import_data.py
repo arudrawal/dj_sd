@@ -72,11 +72,12 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
     return df
 
 def extract_by_csv_map(df_input: pd.DataFrame, ag2db_map: dict):
-    # customer_ag2db_map = AgencySetting.objects.filter(group=user_group, name=AgencySetting.CUSTOMER_CSV_MAP).first()
     df_output = pd.DataFrame()
     for ag_col,db_col in ag2db_map.items():
-        if ag_col in df_input.columns:
+        if ag_col in df_input.columns:  # do the column name conversion
             df_output[db_col] = df_input[ag_col]
+        elif db_col in df_input.columns: # accept the converted columns as is
+            df_output[db_col] = df_input[db_col]
     return df_output
 
 def get_existing_customers(db_agency: Agency):
@@ -113,8 +114,8 @@ def update_customer(df_customer: pd.DataFrame, db_customer_by_hash: dict):
             db_customer =  db_customer_by_hash[row['hash_key']]
             if 'company_account' in df_customer.columns:
                 if db_customer.company_account != row['company_account']:
-                    if 'company_acocunt' not in customer_columns:
-                        customer_columns.append('company_acocunt')
+                    if 'company_account' not in customer_columns:
+                        customer_columns.append('company_account')
                     db_customer.company_account == row['company_account']
                     updated = True
             if 'email' in df_customer.columns:
