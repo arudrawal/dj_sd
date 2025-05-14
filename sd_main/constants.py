@@ -1,5 +1,9 @@
 
-DF_HASH_KEY = "hash_key"
+# DF_HASH_KEY = "hash_key"
+DF_CUSTOMER_HASH_KEY = "customer_hash_key"
+DF_POLICY_HASH_KEY = "policy_hash_key"
+DF_POLICY_ALERT_HASH_KEY = "policy_alert_hash_key"
+
 # table: sd_main_customer
 CUSTOMER_NAME_COLUMN = "name"
 CUSTOMER_COMPANY_ACCOUNT = "company_account"

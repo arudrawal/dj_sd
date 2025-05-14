@@ -3,7 +3,7 @@ from io import StringIO
 from datetime import datetime
 from .models import Policy
 from django.contrib.auth.models import Group
-from .models import Agency, Customer, AgencySetting, Policy
+from .models import Agency, Customer, AgencySetting, Policy, PolicyAlert
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import connection
 from django.conf import settings
@@ -71,7 +71,7 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
     except:
         df = pd.DataFrame()
     return df
-
+# extract map specific columns
 def extract_by_csv_map(df_input: pd.DataFrame, ag2db_map: dict):
     df_output = pd.DataFrame()
     for ag_col,db_col in ag2db_map.items():
@@ -81,6 +81,20 @@ def extract_by_csv_map(df_input: pd.DataFrame, ag2db_map: dict):
             df_output[db_col] = df_input[db_col]
     return df_output
 
+# Translate all columns in place
+def combine_all_csv_map(db_agency):
+    combined_map = {}
+    customer_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP).first()
+    if customer_map:
+        combined_map |= customer_map.json_value
+    policy_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.POLICY_CSV_MAP).first()
+    if policy_map:
+        combined_map |= policy_map.json_value
+    alert_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).first()
+    if alert_map:
+        combined_map |= alert_map.json_value
+    return combined_map
+    
 def get_existing_customers(db_agency: Agency):
     """ Agency specific unique customer hash (customer.name) """
     customers_by_hash = {}
@@ -110,9 +124,9 @@ def update_customer(df_customer: pd.DataFrame, db_customer_by_hash: dict):
     customer_models = []
     customer_columns = []
     for _,row in df_customer.iterrows():
-        if row[constants.DF_HASH_KEY] in db_customer_by_hash.keys():
+        if row[constants.DF_CUSTOMER_HASH_KEY] in db_customer_by_hash.keys():
             updated = False
-            db_customer =  db_customer_by_hash[row[constants.DF_HASH_KEY]]
+            db_customer =  db_customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
             if constants.CUSTOMER_COMPANY_ACCOUNT in df_customer.columns:
                 if db_customer.company_account != row[constants.CUSTOMER_COMPANY_ACCOUNT]:
                     if constants.CUSTOMER_COMPANY_ACCOUNT not in customer_columns:
@@ -154,12 +168,12 @@ def import_customer(df_customer: pd.DataFrame, db_agency: Agency):
         df_customer[constants.CUSTOMER_DOB_COLUMN] = df_customer[constants.CUSTOMER_DOB_COLUMN].apply(lambda sdt: convert_to_db_ymd(sdt))
     add_count = update_count = 0
     if not df_customer.empty and db_agency:
-        df_customer[constants.DF_HASH_KEY] = df_customer.apply(lambda row: str(row[constants.CUSTOMER_NAME_COLUMN]), axis=1)
+        df_customer[constants.DF_CUSTOMER_HASH_KEY] = df_customer.apply(lambda row: str(row[constants.CUSTOMER_NAME_COLUMN]), axis=1)
         df_customer_add = df_customer  # assume all to add
         df_customer_update = pd.DataFrame()  # assume none to update
         if len(existing_hash_ids) > 0:
-            df_customer_add = df_customer.loc[~df_customer[constants.DF_HASH_KEY].isin(existing_hash_ids)]
-            df_customer_update = df_customer.loc[df_customer[constants.DF_HASH_KEY].isin(existing_hash_ids)]
+            df_customer_add = df_customer.loc[~df_customer[constants.DF_CUSTOMER_HASH_KEY].isin(existing_hash_ids)]
+            df_customer_update = df_customer.loc[df_customer[constants.DF_CUSTOMER_HASH_KEY].isin(existing_hash_ids)]
         add_count = len(df_customer_add.index)
         update_count = len(df_customer_update.index)
         if not df_customer_add.empty:
@@ -199,9 +213,9 @@ def update_policy(df_policy: pd.DataFrame, db_policies_by_hash: dict):
     policy_instances = []
     policy_columns = []
     for _,row in df_policy.iterrows():
-        if row[constants.DF_HASH_KEY] in db_policies_by_hash.keys():
+        if row[constants.DF_POLICY_HASH_KEY] in db_policies_by_hash.keys():
             update = False
-            db_policy = db_policies_by_hash[constants.DF_HASH_KEY]
+            db_policy = db_policies_by_hash[constants.DF_POLICY_HASH_KEY]
             if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
                 if db_policy.start_date != row[constants.POLICY_START_DATE_COLUMN]:
                     db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
@@ -237,13 +251,13 @@ def import_policy(df_policy: pd.DataFrame, db_agency: Agency):
     df_policy[constants.POLICY_END_DATE_COLUMN] = df_policy[f'dt_{constants.POLICY_END_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
     add_count = update_count = 0
     if not df_policy.empty and db_agency:
-        df_policy[constants.DF_HASH_KEY] = df_policy.apply(lambda row: str(row[constants.POLICY_NUMBER_COLUMN]) + 
+        df_policy[constants.DF_POLICY_HASH_KEY] = df_policy.apply(lambda row: str(row[constants.POLICY_NUMBER_COLUMN]) + 
                                             ":" + str(row[constants.POLICY_END_DATE_COLUMN]), axis=1)
         df_policy_add = df_policy  # assume all to add
         df_policy_update = pd.DataFrame()  # assume none to update
         if len(existing_hash_ids) > 0:
-            df_policy_add = df_policy.loc[~df_policy[constants.DF_HASH_KEY].isin(existing_hash_ids)]
-            df_policy_update = df_policy.loc[df_policy[constants.DF_HASH_KEY].isin(existing_hash_ids)]
+            df_policy_add = df_policy.loc[~df_policy[constants.DF_POLICY_HASH_KEY].isin(existing_hash_ids)]
+            df_policy_update = df_policy.loc[df_policy[constants.DF_POLICY_HASH_KEY].isin(existing_hash_ids)]
         add_count = len(df_policy_add.index)
         update_count = len(df_policy_update.index)
         if not df_policy_add.empty:
@@ -253,5 +267,113 @@ def import_policy(df_policy: pd.DataFrame, db_agency: Agency):
     print(f"Policies: adding={add_count}, updating={update_count}")
     return add_count, update_count
 
+def get_existing_alerts(db_agency: Agency):
+    """ Agency/Policy specific unique hash (policy.number) """
+    alerts_by_hash = {}
+    active_alerts = PolicyAlert.objects.filter(agency=db_agency, is_active=True).all()
+    for existing_alert_row in active_alerts:
+        hash_key = f"{str(existing_alert_row.policy.number)}:{str(existing_alert_row.policy.end_date)}"
+        alerts_by_hash[hash_key] = existing_alert_row
+    return alerts_by_hash
+
+def add_policy_alert(df_policy_alert: pd.DataFrame, db_agency: Agency):
+    alert_instances = []
+    policy_by_hash = get_existing_policies(db_agency)
+    customer_by_hash = get_existing_customers(db_agency)
+    for _,row in df_policy_alert.iterrows():
+        db_policy = policy_by_hash[row[constants.DF_POLICY_HASH_KEY]]
+        db_customer = customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
+        db_policy_alert = PolicyAlert(policy = db_policy, customer = db_customer, agency = db_agency)
+        if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
+            db_policy_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
+        if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
+            db_policy.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
+        if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
+            db_policy.created_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
+        if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
+            db_policy.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
+        if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
+            db_policy.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
+        if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN in df_policy_alert.columns:
+            db_policy.alert_sub_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
+        alert_instances.append(db_policy_alert)
+    PolicyAlert.objects.bulk_create(alert_instances)
+    return len(alert_instances)
+
+def update_policy_alert(df_policy_alert: pd.DataFrame, db_alerts_by_hash: dict):
+    alert_instances = []
+    alert_columns = []
+    for _,row in df_policy_alert.iterrows():
+        if row[constants.DF_POLICY_ALERT_HASH_KEY] in db_alerts_by_hash.keys():
+            update = False
+            db_alert = db_alerts_by_hash[constants.DF_POLICY_ALERT_HASH_KEY]
+            if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
+                if db_alert.due_date != row[constants.POLICY_ALERT_DUE_DATE_COLUMN]:
+                    db_alert.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
+                    if constants.POLICY_ALERT_DUE_DATE_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_DUE_DATE_COLUMN)
+                    update = True
+            if constants.POLICY_ALERT_CREATE_DATE_COLUMN in df_policy_alert.columns:
+                if db_alert.create_date != row[constants.POLICY_ALERT_CREATE_DATE_COLUMN]:
+                    db_alert.create_date = row[constants.POLICY_ALERT_CREATE_DATE_COLUMN]
+                    if constants.POLICY_ALERT_CREATE_DATE_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_CREATE_DATE_COLUMN)
+                    update = True
+            if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
+                if db_alert.alert_level != row[constants.POLICY_ALERT_LEVEL_COLUMN]:
+                    db_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
+                    if constants.POLICY_ALERT_LEVEL_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_LEVEL_COLUMN)
+                    update = True
+            if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
+                if db_alert.work_status != row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]:
+                    db_alert.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
+                    if constants.POLICY_ALERT_WORK_STATUS_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_WORK_STATUS_COLUMN)
+                    update = True
+            if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
+                if db_alert.alert_category != row[constants.POLICY_ALERT_CATEGORY_COLUMN]:
+                    db_alert.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
+                    if constants.POLICY_ALERT_CATEGORY_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_CATEGORY_COLUMN)
+                    update = True
+            if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN in df_policy_alert.columns:
+                if db_alert.alert_category != row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]:
+                    db_alert.alert_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
+                    if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_SUB_CATEGORY_COLUMN)
+                    update = True
+            if update:
+                alert_instances.append(db_alert)
+    if len(alert_instances):
+        PolicyAlert.objects.bulk_update(alert_instances, alert_columns)
+    return len(alert_instances)
+
+
 def import_alert(df_alert: pd.DataFrame, db_agency: Agency):
-    pass
+    # group_object = Group.objects.filter(name=group_name).first()
+    alerts_by_hash = get_existing_alerts(db_agency)
+    existing_alert_hash_ids = alerts_by_hash.keys()
+    df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
+    df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))
+    df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_DUE_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))
+    df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
+    add_count = update_count = 0
+    if not df_alert.empty and db_agency:
+        df_alert[constants.DF_CUSTOMER_HASH_KEY] = df_alert.apply(lambda row: str(row[constants.CUSTOMER_NAME_COLUMN]), axis=1)
+        df_alert[constants.DF_POLICY_ALERT_HASH_KEY] = df_alert.apply(lambda row: str(row[constants.POLICY_NUMBER_COLUMN]) + 
+                                            ":" + str(row[constants.POLICY_END_DATE_COLUMN]), axis=1)
+        df_alert[constants.DF_POLICY_HASH_KEY] = df_alert[constants.DF_POLICY_ALERT_HASH_KEY] # hash_alert == hash_policy
+        df_alert_add = df_alert  # assume all to add
+        df_alert_update = pd.DataFrame()  # assume none to update
+        if len(existing_alert_hash_ids) > 0:
+            df_alert_add = df_alert.loc[~df_alert[constants.DF_POLICY_ALERT_HASH_KEY].isin(existing_alert_hash_ids)]
+            df_alert_update = df_alert.loc[df_alert[constants.DF_POLICY_ALERT_HASH_KEY].isin(existing_alert_hash_ids)]
+        add_count = len(df_alert_add.index)
+        update_count = len(df_alert_update.index)
+        if not df_alert_add.empty:
+            add_policy_alert(df_alert_add, db_agency)
+        if not df_alert_update.empty:
+            update_policy_alert(df_alert_update, db_agency)
+    print(f"Policies: adding={add_count}, updating={update_count}")
+    return add_count, update_count

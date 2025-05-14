@@ -93,6 +93,7 @@ def upload_policy(request):
                     if len(df_customer.index):
                         add_cust, update_cust = import_customer(df_customer, db_agency)
                 add_policy = update_policy = 0
+                policy_map_dict = None
                 policy_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.POLICY_CSV_MAP).first()
                 if policy_map:
                     policy_map_dict = policy_map.json_value
@@ -103,7 +104,8 @@ def upload_policy(request):
                 alert_map = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).first()
                 if alert_map:
                     alert_map_dict = alert_map.json_value
-                    df_alert = extract_by_csv_map(df_agency_upload, alert_map_dict)
+                    alert_policy_map_dict = alert_map_dict|policy_map_dict
+                    df_alert = extract_by_csv_map(df_agency_upload, alert_policy_map_dict)
                     if len(df_alert.index):
                         add_alert, update_alert = import_alert(df_alert, db_agency)
                 context_dict['add_count'] = add_alert
