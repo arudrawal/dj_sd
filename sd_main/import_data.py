@@ -356,7 +356,7 @@ def import_alert(df_alert: pd.DataFrame, db_agency: Agency):
     existing_alert_hash_ids = alerts_by_hash.keys()
     df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
     df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))
-    df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_DUE_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))
+    df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))
     df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
     add_count = update_count = 0
     if not df_alert.empty and db_agency:
