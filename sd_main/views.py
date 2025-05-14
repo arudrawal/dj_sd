@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from .forms import UploadPolicyForm
 from .forms import AgencyForm
 
-from .models import Agency, AgencyUser, AgencySetting, Policy
+from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
@@ -53,13 +53,36 @@ def login_agency(request):
 @login_required
 def index(request):
     context_dict = get_common_context(request, 'Notifications')
+    context_dict['alerts']= None
+    if 'agency' in context_dict.keys():
+        alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).all()
+    else:
+        return redirect('login_agency')
+    context_dict['alerts'] = alerts
+    return render(request, 'sd_main/dash/notifications.html', context=context_dict)
+
+@login_required
+def customers(request):
+    context_dict = get_common_context(request, 'Customers')
+    context_dict['customers']= None
+    if 'agency' in context_dict.keys():
+        customers = Customer.objects.filter(agency=context_dict['agency']).all()
+    else:
+        return redirect('login_agency')
+    context_dict['customers'] = customers
+
+    return render(request, 'sd_main/dash/customers.html', context_dict)
+
+@login_required
+def policies(request):
+    context_dict = get_common_context(request, 'Policies')
     context_dict['policies']= None
     if 'agency' in context_dict.keys():
         policies = Policy.objects.filter(agency=context_dict['agency']).all()
     else:
         return redirect('login_agency')
     context_dict['policies'] = policies
-    return render(request, 'sd_main/dash/notifications.html', context=context_dict)
+    return render(request, 'sd_main/dash/policies.html', context_dict)
 
 @login_required
 def vehicles(request):

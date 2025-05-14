@@ -109,7 +109,7 @@ class PolicyAlert(models.Model):
     
     def __str__(self):
         """String for representing the Model object."""
-        return self.policy_number
+        return f"{self.policy.number} - {self.alert_level}"
     
     def get_absolute_url(self):
         """Returns the url to access a particular policy instance."""

@@ -44,6 +44,30 @@
                     <!--begin:Menu item-->
                     <div  class="menu-item">
                         <!--begin:Menu link-->
+                        {% url 'customers' as cust_url %}
+                        <a class="menu-link {% if request.path == cust_url %}active{% endif %}" href="{{cust_url}}">
+                            {# <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>#}
+                            <span class="menu-title">Customers</span>
+                        </a> <!--end:Menu link-->
+                    </div><!--end:Menu item-->
+                </div>
+                <!--begin:Menu item-->
+                <div data-kt-menu-trigger="click" class="menu-item here show menu-accordion" >
+                    <!--begin:Menu item-->
+                    <div  class="menu-item">
+                        <!--begin:Menu link-->
+                        {% url 'policies' as policies_url %}
+                        <a class="menu-link {% if request.path == policies_url %}active{% endif %}" href="{{policies_url}}">
+                            {# <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>#}
+                            <span class="menu-title">Policies</span>
+                        </a> <!--end:Menu link-->
+                    </div><!--end:Menu item-->
+                </div>
+                <!--begin:Menu item-->
+                <div data-kt-menu-trigger="click" class="menu-item here show menu-accordion" >
+                    <!--begin:Menu item-->
+                    <div  class="menu-item">
+                        <!--begin:Menu link-->
                         {% url 'vehicles' as veh_url %}
                         <a class="menu-link {% if request.path == veh_url %}active{% endif %}" href="{{veh_url}}">
                             {# <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>#}
