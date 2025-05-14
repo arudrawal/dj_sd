@@ -188,7 +188,7 @@ def get_existing_policies(db_agency: Agency):
     policies_by_hash = {}
     all_policies = Policy.objects.filter(agency=db_agency).all()
     for existing_policy_row in all_policies:
-        hash_key = f"{str(existing_policy_row.policy_number)}:{convert_to_db_ymd(existing_policy_row.end_date)}"
+        hash_key = f"{str(existing_policy_row.number)}:{convert_to_db_ymd(existing_policy_row.end_date)}"
         policies_by_hash[hash_key] = existing_policy_row
     return policies_by_hash
 
@@ -197,7 +197,7 @@ def add_policy(df_policy: pd.DataFrame, db_agency: Agency):
     customer_by_hash = get_existing_customers(db_agency)
     for _,row in df_policy.iterrows():
         db_customer = customer_by_hash[row[constants.CUSTOMER_NAME_COLUMN]]
-        db_policy = Policy(policy_number=row[constants.POLICY_NUMBER_COLUMN], 
+        db_policy = Policy(number=row[constants.POLICY_NUMBER_COLUMN], 
                            customer=db_customer, 
                            agency=db_agency, 
                            lob = row[constants.POLICY_LOB_COLUMN])
@@ -263,7 +263,7 @@ def import_policy(df_policy: pd.DataFrame, db_agency: Agency):
         if not df_policy_add.empty:
             add_policy(df_policy_add, db_agency)
         if not df_policy_update.empty:
-            update_policy(df_policy_update, db_agency)
+            update_policy(df_policy_update, policies_by_hash)
     print(f"Policies: adding={add_count}, updating={update_count}")
     return add_count, update_count
 
