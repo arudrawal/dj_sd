@@ -12,7 +12,7 @@ from .import_data import convert_to_dataframe, import_policy, import_customer, i
 
 
 def get_common_context(request, page_title: str):
-    context_dict = {'page_title': page_title, 'agency': None}
+    context_dict = {'page_title': page_title, 'session_data': request.session,'agency': None}
     if 'agency_name' in request.session: # session has agency
         db_agency = Agency.objects.filter(name=request.session['agency_name']).first()
         if db_agency:
@@ -56,10 +56,21 @@ def index(request):
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
         alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).all()
+        context_dict['alerts'] = alerts
     else:
         return redirect('login_agency')
-    context_dict['alerts'] = alerts
     return render(request, 'sd_main/dash/notifications.html', context=context_dict)
+
+@login_required
+def select_alert(request):
+    if request.method == "POST":
+        selected_alert_id = request.POST.get('selected_alert_id')
+        if selected_alert_id:
+            db_alert = PolicyAlert.objects.get(id=int(selected_alert_id))
+            if db_alert:
+                request.session['selected_alert_id'] = db_alert.id
+    return redirect('index')
+
 
 @login_required
 def customers(request):

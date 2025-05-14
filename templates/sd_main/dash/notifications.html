@@ -26,6 +26,12 @@
 
 	<!--begin::Body-->
 	<div class="card-body py-3">
+        <script>
+            function submitSelectForm(alert_id) {
+                const parentForm = document.getElementById("form_select_alert_"+alert_id);
+                parentForm.submit();
+            }        
+        </script>
         <!--begin::Table container-->
         <div class="table-responsive">
             <!--begin::Table-->
@@ -35,14 +41,14 @@
                     <tr class="fw-bold text-muted">
                         <th class="w-25px">
                             <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input" type="checkbox" value="1" data-kt-check="true" data-kt-check-target=".widget-13-check">
+                                <input class="form-check-input" type="checkbox" value="{{alert.id}}" data-kt-check="true" data-kt-check-target=".widget-13-check">
                             </div>
                         </th>                        
                         <th class="min-w-120px">Alert</th>
                         <th class="min-w-150px">Policy</th>
                         <th class="min-w-120px">LOB</th>
                         <th class="min-w-140px">Owner</th>
-                        <th class="min-w-120px">End Date</th>
+                        <th class="min-w-120px">Due Date</th>
                         <!--<th class="min-w-120px">Typr</th> -->
                         <th class="min-w-120px">Email</th>
                         <th class="min-w-120px">Phone</th>
@@ -57,11 +63,16 @@
                     <tr>
                         <td>
                             <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input widget-13-check" type="checkbox" value="1">
+                                <input class="form-check-input widget-13-check" name='selected_alert' type="radio" value="{{alert.id}}"
+                                    {% if alert.id == session_data.selected_alert_id %}checked{% endif %} />
                             </div>
                         </td>
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.alert_level}}</a>
+                            {%if alert.alert_level|lower == 'critical' %}
+                            <span class="badge badge-light-danger">{{alert.alert_level}}</span>
+                            {% else %}
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.alert_level}}</a>
+                            {% endif %}
                         </td>
                         
                         <td>
@@ -78,7 +89,7 @@
                         </td>
 
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.policy.end_date}}</a>
+                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.due_date}}</a>
                             <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span> -->
                         </td>
 
@@ -106,9 +117,14 @@
                             <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4" data-kt-menu="true" style="">
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
-                                        Email
-                                    </a>
+                                    <form action="{% url 'select_alert' %}" method="post" name="form_select_alert_{{alert.id}}" id="form_select_alert_{{alert.id}}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="selected_alert_id" value="{{alert.id}}"></hidden>
+                                        <button type="submit" style="display: none;">Select</button>
+                                        <a href="javascript:submitSelectForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
+                                            Select
+                                        </a>
+                                    </form>
                                 </div>
                                 <!--end::Menu item-->
                                 

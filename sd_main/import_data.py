@@ -290,7 +290,7 @@ def add_policy_alert(df_policy_alert: pd.DataFrame, db_agency: Agency):
         if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
             db_policy.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
         if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
-            db_policy.created_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
+            db_policy.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
         if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
             db_policy.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
         if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
@@ -307,18 +307,18 @@ def update_policy_alert(df_policy_alert: pd.DataFrame, db_alerts_by_hash: dict):
     for _,row in df_policy_alert.iterrows():
         if row[constants.DF_POLICY_ALERT_HASH_KEY] in db_alerts_by_hash.keys():
             update = False
-            db_alert = db_alerts_by_hash[constants.DF_POLICY_ALERT_HASH_KEY]
+            db_alert = db_alerts_by_hash[row[constants.DF_POLICY_ALERT_HASH_KEY]]
             if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
                 if db_alert.due_date != row[constants.POLICY_ALERT_DUE_DATE_COLUMN]:
                     db_alert.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
                     if constants.POLICY_ALERT_DUE_DATE_COLUMN not in alert_columns:
                         alert_columns.append(constants.POLICY_ALERT_DUE_DATE_COLUMN)
                     update = True
-            if constants.POLICY_ALERT_CREATE_DATE_COLUMN in df_policy_alert.columns:
-                if db_alert.create_date != row[constants.POLICY_ALERT_CREATE_DATE_COLUMN]:
-                    db_alert.create_date = row[constants.POLICY_ALERT_CREATE_DATE_COLUMN]
-                    if constants.POLICY_ALERT_CREATE_DATE_COLUMN not in alert_columns:
-                        alert_columns.append(constants.POLICY_ALERT_CREATE_DATE_COLUMN)
+            if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
+                if db_alert.created_date != row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]:
+                    db_alert.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
+                    if constants.POLICY_ALERT_CREATED_DATE_COLUMN not in alert_columns:
+                        alert_columns.append(constants.POLICY_ALERT_CREATED_DATE_COLUMN)
                     update = True
             if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
                 if db_alert.alert_level != row[constants.POLICY_ALERT_LEVEL_COLUMN]:
@@ -374,6 +374,6 @@ def import_alert(df_alert: pd.DataFrame, db_agency: Agency):
         if not df_alert_add.empty:
             add_policy_alert(df_alert_add, db_agency)
         if not df_alert_update.empty:
-            update_policy_alert(df_alert_update, db_agency)
+            update_policy_alert(df_alert_update, alerts_by_hash)
     print(f"Policies: adding={add_count}, updating={update_count}")
     return add_count, update_count
