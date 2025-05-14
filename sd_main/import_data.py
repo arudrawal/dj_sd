@@ -113,7 +113,7 @@ def add_customer(df_customer: pd.DataFrame, db_agency: Agency):
         if constants.CUSTOMER_EMAIL_COLUMN in df_customer.columns:
             db_customer.email = row[constants.CUSTOMER_EMAIL_COLUMN]
         if constants.CUSTOMER_PHONE_COLUMN in df_customer.columns:
-            db_customer.email = row[constants.CUSTOMER_PHONE_COLUMN]
+            db_customer.phone = row[constants.CUSTOMER_PHONE_COLUMN]
         if constants.CUSTOMER_DOB_COLUMN in df_customer.columns:
             db_customer.dob = row[constants.CUSTOMER_DOB_COLUMN]
         customer_models.append(db_customer)
@@ -126,7 +126,7 @@ def update_customer(df_customer: pd.DataFrame, db_customer_by_hash: dict):
     for _,row in df_customer.iterrows():
         if row[constants.DF_CUSTOMER_HASH_KEY] in db_customer_by_hash.keys():
             updated = False
-            db_customer =  db_customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
+            db_customer = db_customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
             if constants.CUSTOMER_COMPANY_ACCOUNT in df_customer.columns:
                 if db_customer.company_account != row[constants.CUSTOMER_COMPANY_ACCOUNT]:
                     if constants.CUSTOMER_COMPANY_ACCOUNT not in customer_columns:
@@ -140,8 +140,8 @@ def update_customer(df_customer: pd.DataFrame, db_customer_by_hash: dict):
                         customer_columns.append(constants.CUSTOMER_EMAIL_COLUMN)
                     updated = True
             if constants.CUSTOMER_PHONE_COLUMN in df_customer.columns:
-                if db_customer.email != row[constants.CUSTOMER_PHONE_COLUMN]:
-                    db_customer.email = row[constants.CUSTOMER_PHONE_COLUMN]
+                if db_customer.phone != row[constants.CUSTOMER_PHONE_COLUMN]:
+                    db_customer.phone = row[constants.CUSTOMER_PHONE_COLUMN]
                     if constants.CUSTOMER_PHONE_COLUMN not in customer_columns:
                         customer_columns.append(constants.CUSTOMER_PHONE_COLUMN)
                     updated = True
@@ -199,8 +199,9 @@ def add_policy(df_policy: pd.DataFrame, db_agency: Agency):
         db_customer = customer_by_hash[row[constants.CUSTOMER_NAME_COLUMN]]
         db_policy = Policy(number=row[constants.POLICY_NUMBER_COLUMN], 
                            customer=db_customer, 
-                           agency=db_agency, 
-                           lob = row[constants.POLICY_LOB_COLUMN])
+                           agency=db_agency)
+        if constants.POLICY_LOB_COLUMN in df_policy.columns:
+            db_policy.lob = row[constants.POLICY_LOB_COLUMN]
         if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
             db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
         if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
@@ -215,25 +216,25 @@ def update_policy(df_policy: pd.DataFrame, db_policies_by_hash: dict):
     for _,row in df_policy.iterrows():
         if row[constants.DF_POLICY_HASH_KEY] in db_policies_by_hash.keys():
             update = False
-            db_policy = db_policies_by_hash[constants.DF_POLICY_HASH_KEY]
+            db_policy = db_policies_by_hash[row[constants.DF_POLICY_HASH_KEY]]
             if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
                 if db_policy.start_date != row[constants.POLICY_START_DATE_COLUMN]:
                     db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
                     if constants.POLICY_START_DATE_COLUMN not in policy_columns:
                         policy_columns.append(constants.POLICY_START_DATE_COLUMN)
                     update = True
-                if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
-                    if db_policy.end_date != row[constants.POLICY_END_DATE_COLUMN]:
-                        db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
-                        if constants.POLICY_END_DATE_COLUMN not in policy_columns:
-                            policy_columns.append(constants.POLICY_END_DATE_COLUMN)
-                        update = True
-                if constants.POLICY_LOB_COLUMN in df_policy.columns:
-                    if db_policy.lob != row[constants.POLICY_LOB_COLUMN]:
-                        db_policy.lob = row[constants.POLICY_LOB_COLUMN]
-                        if constants.POLICY_LOB_COLUMN not in policy_columns:
-                            policy_columns.append(constants.POLICY_LOB_COLUMN)
-                        update = True
+            if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
+                if db_policy.end_date != row[constants.POLICY_END_DATE_COLUMN]:
+                    db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
+                    if constants.POLICY_END_DATE_COLUMN not in policy_columns:
+                        policy_columns.append(constants.POLICY_END_DATE_COLUMN)
+                    update = True
+            if constants.POLICY_LOB_COLUMN in df_policy.columns:
+                if db_policy.lob != row[constants.POLICY_LOB_COLUMN]:
+                    db_policy.lob = row[constants.POLICY_LOB_COLUMN]
+                    if constants.POLICY_LOB_COLUMN not in policy_columns:
+                        policy_columns.append(constants.POLICY_LOB_COLUMN)
+                    update = True
             if update:
                 policy_instances.append(db_policy)
     if len(policy_instances):
@@ -351,7 +352,6 @@ def update_policy_alert(df_policy_alert: pd.DataFrame, db_alerts_by_hash: dict):
 
 
 def import_alert(df_alert: pd.DataFrame, db_agency: Agency):
-    # group_object = Group.objects.filter(name=group_name).first()
     alerts_by_hash = get_existing_alerts(db_agency)
     existing_alert_hash_ids = alerts_by_hash.keys()
     df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
