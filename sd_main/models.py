@@ -85,8 +85,10 @@ class Policy(models.Model):
         ('Auto', 'Auto'),
         ('Home', 'Home'),
         ('Life', 'Life'),
+        ('Umbrella' 'Umbrella'),
+        ('Commercial', 'Commercial')
     )
-    lob = models.CharField(max_length=32, choices=LOB, default='auto', blank=False, help_text='Policy business type', db_column=constants.POLICY_LOB_COLUMN)
+    lob = models.CharField(max_length=32, blank=False, help_text='Policy business type', db_column=constants.POLICY_LOB_COLUMN)
 
 # Alert for a specific Policy
 class PolicyAlert(models.Model):

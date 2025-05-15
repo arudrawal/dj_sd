@@ -21,13 +21,27 @@ def get_engine():
     return create_engine(database_url, echo=False)
 
 def convert_ymd_to_date(val: str) -> datetime:
-    return datetime.strptime(str(val), "%Y-%m-%d")
+    try:
+        if val and len(val):
+            return datetime.strptime(str(val), "%Y-%m-%d")
+    except:
+        return ''
 
 def convert_to_date(val: str) -> datetime:
-    return date_parser.parse(val)
+    try:
+        if val and len(val):
+            return date_parser.parse(val)
+    except:
+        print(f"date_value: {val}")
+    return None
 
 def convert_to_db_ymd(dt: datetime) -> str:
-    return datetime.strftime(dt, "%Y-%m-%d")
+    if dt:
+        try:
+            return datetime.strftime(dt, "%Y-%m-%d")
+        except:
+            print (f"dt={dt}")
+    return ''
 
 """ Get all CSV columns as dictionary of type str unless given in non_str: {'col3': bool, 'col4': float}.
     return {'col1': str, 'col2': str, 'col3': bool, 'col4': float}
@@ -63,11 +77,12 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
     try:
         file_content = file.read().decode('utf-8')
         data1 = StringIO(file_content)
-        data_type = get_csv_data_type(data1)
+        data_type_dict = get_csv_data_type(data1)
         data = StringIO(file_content)
-        df = read_file_csv(data, data_type)
+        df = read_file_csv(data, data_type=data_type_dict)
         df.columns = df.columns.str.lower() # all column names to lowercase
         df.columns = df.columns.str.replace(' ', '_') # replace space with '_'
+        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x) # strip string values
     except:
         df = pd.DataFrame()
     return df
@@ -115,7 +130,8 @@ def add_customer(df_customer: pd.DataFrame, db_agency: Agency):
         if constants.CUSTOMER_PHONE_COLUMN in df_customer.columns:
             db_customer.phone = row[constants.CUSTOMER_PHONE_COLUMN]
         if constants.CUSTOMER_DOB_COLUMN in df_customer.columns:
-            db_customer.dob = row[constants.CUSTOMER_DOB_COLUMN]
+            if row[constants.CUSTOMER_DOB_COLUMN]:
+                db_customer.dob = row[constants.CUSTOMER_DOB_COLUMN]
         customer_models.append(db_customer)
     Customer.objects.bulk_create(customer_models)
     return len(customer_models)
@@ -203,9 +219,11 @@ def add_policy(df_policy: pd.DataFrame, db_agency: Agency):
         if constants.POLICY_LOB_COLUMN in df_policy.columns:
             db_policy.lob = row[constants.POLICY_LOB_COLUMN]
         if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
-            db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
+            if len(row[constants.POLICY_START_DATE_COLUMN]):
+                db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
         if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
-            db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
+            if len(row[constants.POLICY_END_DATE_COLUMN]):
+                db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
         policy_instances.append(db_policy)
     Policy.objects.bulk_create(policy_instances)
     return len(policy_instances)
@@ -219,16 +237,18 @@ def update_policy(df_policy: pd.DataFrame, db_policies_by_hash: dict):
             db_policy = db_policies_by_hash[row[constants.DF_POLICY_HASH_KEY]]
             if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
                 if db_policy.start_date != row[constants.POLICY_START_DATE_COLUMN]:
-                    db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
-                    if constants.POLICY_START_DATE_COLUMN not in policy_columns:
-                        policy_columns.append(constants.POLICY_START_DATE_COLUMN)
-                    update = True
+                    if len(row[constants.POLICY_START_DATE_COLUMN]):
+                        db_policy.start_date = row[constants.POLICY_START_DATE_COLUMN]
+                        if constants.POLICY_START_DATE_COLUMN not in policy_columns:
+                            policy_columns.append(constants.POLICY_START_DATE_COLUMN)
+                        update = True
             if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
                 if db_policy.end_date != row[constants.POLICY_END_DATE_COLUMN]:
-                    db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
-                    if constants.POLICY_END_DATE_COLUMN not in policy_columns:
-                        policy_columns.append(constants.POLICY_END_DATE_COLUMN)
-                    update = True
+                    if len(row[constants.POLICY_END_DATE_COLUMN]):
+                        db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
+                        if constants.POLICY_END_DATE_COLUMN not in policy_columns:
+                            policy_columns.append(constants.POLICY_END_DATE_COLUMN)
+                        update = True
             if constants.POLICY_LOB_COLUMN in df_policy.columns:
                 if db_policy.lob != row[constants.POLICY_LOB_COLUMN]:
                     db_policy.lob = row[constants.POLICY_LOB_COLUMN]
@@ -282,22 +302,26 @@ def add_policy_alert(df_policy_alert: pd.DataFrame, db_agency: Agency):
     policy_by_hash = get_existing_policies(db_agency)
     customer_by_hash = get_existing_customers(db_agency)
     for _,row in df_policy_alert.iterrows():
-        db_policy = policy_by_hash[row[constants.DF_POLICY_HASH_KEY]]
-        db_customer = customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
-        db_policy_alert = PolicyAlert(policy = db_policy, customer = db_customer, agency = db_agency)
-        if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
-            db_policy_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
-        if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
-            db_policy.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
-        if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
-            db_policy.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
-        if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
-            db_policy.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
-        if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
-            db_policy.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
-        if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN in df_policy_alert.columns:
-            db_policy.alert_sub_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
-        alert_instances.append(db_policy_alert)
+        db_policy = db_customer = None
+        if row[constants.DF_POLICY_HASH_KEY] in policy_by_hash.keys():
+            db_policy = policy_by_hash[row[constants.DF_POLICY_HASH_KEY]]
+        if row[constants.DF_CUSTOMER_HASH_KEY] in customer_by_hash.keys():
+            db_customer = customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
+        if db_policy and db_customer:
+            db_policy_alert = PolicyAlert(policy = db_policy, customer = db_customer, agency = db_agency)
+            if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
+                db_policy_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
+            if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
+                db_policy.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
+            if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
+                db_policy.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
+            if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
+                db_policy.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
+            if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
+                db_policy.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
+            if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN in df_policy_alert.columns:
+                db_policy.alert_sub_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
+            alert_instances.append(db_policy_alert)
     PolicyAlert.objects.bulk_create(alert_instances)
     return len(alert_instances)
 
