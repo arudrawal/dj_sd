@@ -267,10 +267,12 @@ def import_policy(df_policy: pd.DataFrame, db_agency: Agency):
     # group_object = Group.objects.filter(name=group_name).first()
     policies_by_hash = get_existing_policies(db_agency)
     existing_hash_ids = policies_by_hash.keys()
-    df_policy[f'dt_{constants.POLICY_START_DATE_COLUMN}'] = df_policy[constants.POLICY_START_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
-    df_policy[f'dt_{constants.POLICY_END_DATE_COLUMN}'] = df_policy[constants.POLICY_END_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))
-    df_policy[constants.POLICY_START_DATE_COLUMN] = df_policy[f'dt_{constants.POLICY_START_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt)) 
-    df_policy[constants.POLICY_END_DATE_COLUMN] = df_policy[f'dt_{constants.POLICY_END_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
+    if constants.POLICY_START_DATE_COLUMN in df_policy.columns:
+        df_policy[f'dt_{constants.POLICY_START_DATE_COLUMN}'] = df_policy[constants.POLICY_START_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
+        df_policy[constants.POLICY_START_DATE_COLUMN] = df_policy[f'dt_{constants.POLICY_START_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))         
+    if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
+        df_policy[f'dt_{constants.POLICY_END_DATE_COLUMN}'] = df_policy[constants.POLICY_END_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))
+        df_policy[constants.POLICY_END_DATE_COLUMN] = df_policy[f'dt_{constants.POLICY_END_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
     add_count = update_count = 0
     if not df_policy.empty and db_agency:
         # df_policy[constants.DF_POLICY_HASH_KEY] = df_policy.apply(lambda row: str(row[constants.POLICY_NUMBER_COLUMN]) + 
@@ -380,10 +382,12 @@ def update_policy_alert(df_policy_alert: pd.DataFrame, db_alerts_by_hash: dict):
 def import_alert(df_alert: pd.DataFrame, db_agency: Agency):
     alerts_by_hash = get_existing_alerts(db_agency)
     existing_alert_hash_ids = alerts_by_hash.keys()
-    df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
-    df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))
-    df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))
-    df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
+    if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_alert.columns:
+        df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN].apply(lambda sdval: convert_to_date(sdval))
+        df_alert[constants.POLICY_ALERT_DUE_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_DUE_DATE_COLUMN}'].apply(lambda sdt: convert_to_db_ymd(sdt))
+    if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_alert.columns:
+        df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'] = df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN].apply(lambda edval: convert_to_date(edval))    
+        df_alert[constants.POLICY_ALERT_CREATED_DATE_COLUMN] = df_alert[f'dt_{constants.POLICY_ALERT_CREATED_DATE_COLUMN}'].apply(lambda edt: convert_to_db_ymd(edt))
     add_count = update_count = 0
     if not df_alert.empty and db_agency:
         df_alert[constants.DF_CUSTOMER_HASH_KEY] = df_alert.apply(lambda row: str(row[constants.CUSTOMER_NAME_COLUMN]), axis=1)
