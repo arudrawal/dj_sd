@@ -1,5 +1,5 @@
 import pandas as pd
-from io import StringIO
+from io import StringIO, BytesIO
 from datetime import datetime
 from .models import Policy
 from django.contrib.auth.models import Group
@@ -56,6 +56,16 @@ def get_csv_data_type(dot_txt_file, non_str: dict = {}):
             dtype_dict[column] = str
     return dtype_dict
 
+def get_excel_data_type(dot_xls_file, non_str: dict = {}):
+    csv_cols = pd.read_excel(dot_xls_file, nrows=1).columns
+    dtype_dict = {}
+    for column in csv_cols:
+        if column in non_str.keys():
+            dtype_dict[column] = non_str[column]
+        else:
+            dtype_dict[column] = str
+    return dtype_dict
+
 """ Read CSV file, non_str: dictionary non string type columns. """
 def read_file_csv(file, data_type:dict={}) -> pd.DataFrame:
     try:
@@ -75,15 +85,23 @@ def convert_to_dataframe(file: InMemoryUploadedFile) -> pd.DataFrame:
         A Pandas DataFrame containing the data from the file.
     """
     try:
-        file_content = file.read().decode('utf-8')
-        data1 = StringIO(file_content)
-        data_type_dict = get_csv_data_type(data1)
-        data = StringIO(file_content)
-        df = read_file_csv(data, data_type=data_type_dict)
+        if file.content_type == 'text/csv':
+            file_content = file.read().decode('utf-8')
+            # data1 = StringIO(file_content)
+            # data_type_dict = get_csv_data_type(data1)
+            data = StringIO(file_content)
+            df = read_file_csv(data)
+        else:
+            # data_type_dict = get_excel_data_type(data1)
+            file_content = file.read()
+            data = BytesIO(file_content)
+            df = pd.read_excel(data)
+        df.astype(str) # All columns to string type
         df.columns = df.columns.str.lower() # all column names to lowercase
         df.columns = df.columns.str.replace(' ', '_') # replace space with '_'
         df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x) # strip string values
-    except:
+    except Exception as e:
+        print (e)
         df = pd.DataFrame()
     return df
 # extract map specific columns
@@ -297,7 +315,8 @@ def get_existing_alerts(db_agency: Agency):
     alerts_by_hash = {}
     active_alerts = PolicyAlert.objects.filter(agency=db_agency, is_active=True).all()
     for existing_alert_row in active_alerts:
-        hash_key = f"{str(existing_alert_row.policy.number)}:{str(existing_alert_row.policy.end_date)}"
+        # hash_key = f"{str(existing_alert_row.policy.number)}:{str(existing_alert_row.policy.end_date)}"
+        hash_key = f"{str(existing_alert_row.policy.number)}"
         alerts_by_hash[hash_key] = existing_alert_row
     return alerts_by_hash
 
