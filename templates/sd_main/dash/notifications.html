@@ -1,5 +1,13 @@
 {% extends "../index.html" %}
-
+{% block page_script %}
+<script>
+    function submitSelectForm(alert_id) {
+        const parentForm = document.getElementById("form_select_alert_"+alert_id);
+        parentForm.submit();
+    }
+    $("#dj_notification_table").DataTable();
+</script>
+{% endblock %}
 {% block content %}
 <!--begin:: Contents -->
 <div id="kt_app_content" class="app-content  flex-column-fluid ">
@@ -26,16 +34,10 @@
 
 	<!--begin::Body-->
 	<div class="card-body py-3">
-        <script>
-            function submitSelectForm(alert_id) {
-                const parentForm = document.getElementById("form_select_alert_"+alert_id);
-                parentForm.submit();
-            }        
-        </script>
         <!--begin::Table container-->
         <div class="table-responsive">
             <!--begin::Table-->
-            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3" id="dj_notification_table">
                 <!--begin::Table head-->
                 <thead>
                     <tr class="fw-bold text-muted">

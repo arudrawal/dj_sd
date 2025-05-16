@@ -119,11 +119,13 @@ License: For each use you must have a valid license purchased only from above li
                             <script src="{% static 'assets/plugins/custom/datatables/datatables.bundle.js' %}"></script>
                         <!--end::Vendors Javascript-->
                     <!--begin::Custom Javascript(used for this page only)-->
-                            <script src="{% static 'assets/js/widgets.bundle.js' %}"></script>
-                            <script src="{% static 'assets/js/custom/apps/chat/chat.js' %}"></script>
-                            <script src="{% static 'assets/js/custom/utilities/modals/upgrade-plan.js' %}"></script>
-                            <script src="{% static 'assets/js/custom/utilities/modals/users-search.js' %}"></script>
-                        <!--end::Custom Javascript-->
+                        <script src="{% static 'assets/js/widgets.bundle.js' %}"></script>
+                        <script src="{% static 'assets/js/custom/apps/chat/chat.js' %}"></script>
+                        <script src="{% static 'assets/js/custom/utilities/modals/upgrade-plan.js' %}"></script>
+                        <script src="{% static 'assets/js/custom/utilities/modals/users-search.js' %}"></script>
+                    <!--end::Custom Javascript-->
+                    {%block page_script %}
+                    {% endblock %}
                 <!--end::Javascript-->
     </body>
     <!--end::Body-->
