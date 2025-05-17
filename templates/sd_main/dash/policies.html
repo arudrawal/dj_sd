@@ -1,5 +1,9 @@
 {% extends "../index.html" %}
-
+{% block page_script %}
+<script>
+    $("#dj_policy_table").DataTable();
+</script>
+{% endblock %}
 {% block content %}
 <!--begin:: Contents -->
 <div id="kt_app_content" class="app-content  flex-column-fluid ">
@@ -29,7 +33,7 @@
         <!--begin::Table container-->
         <div class="table-responsive">
             <!--begin::Table-->
-            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3" id="dj_policy_table">
                 <!--begin::Table head-->
                 <thead>
                     <tr class="fw-bold text-muted">

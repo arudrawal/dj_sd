@@ -91,17 +91,19 @@
                         </td>
 
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.due_date}}</a>
+                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.due_date|date:'Y-m-d'}}</a>
                             <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span> -->
                         </td>
 
                         <!--<td class="text-gray-900 fw-bold text-hover-primary fs-6">{{policy.policy_type}}</td> -->
 
                         <td>
-                            <span class="badge badge-light-success">{{alert.policy.customer.email}}</span>
+                            {{alert.alert_category}}
+                            <!-- <span class="badge badge-light-success">{{alert.policy.customer.email}}</span> -->
                         </td>
                         <td>
-                            <span class="badge badge-light-success">{{alert.policy.customer.phone}}</span>
+                            {{alert.alert_sub_category}}
+                            <!-- <span class="badge badge-light-success">{{alert.policy.customer.phone}}</span> -->
                         </td>
                         <td class="text-end">
                             <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-kt-menu-flip="top-end">

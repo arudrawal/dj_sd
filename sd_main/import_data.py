@@ -331,20 +331,20 @@ def add_policy_alert(df_policy_alert: pd.DataFrame, db_agency: Agency):
         if row[constants.DF_CUSTOMER_HASH_KEY] in customer_by_hash.keys():
             db_customer = customer_by_hash[row[constants.DF_CUSTOMER_HASH_KEY]]
         if db_policy and db_customer:
-            db_policy_alert = PolicyAlert(policy = db_policy, customer = db_customer, agency = db_agency)
+            db_alert = PolicyAlert(policy = db_policy, customer = db_customer, agency = db_agency)
             if constants.POLICY_ALERT_LEVEL_COLUMN in df_policy_alert.columns:
-                db_policy_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
+                db_alert.alert_level = row[constants.POLICY_ALERT_LEVEL_COLUMN]
             if constants.POLICY_ALERT_CREATED_DATE_COLUMN in df_policy_alert.columns:
-                db_policy.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
+                db_alert.created_date = row[constants.POLICY_ALERT_CREATED_DATE_COLUMN]
             if constants.POLICY_ALERT_DUE_DATE_COLUMN in df_policy_alert.columns:
-                db_policy.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
+                db_alert.due_date = row[constants.POLICY_ALERT_DUE_DATE_COLUMN]
             if constants.POLICY_ALERT_WORK_STATUS_COLUMN in df_policy_alert.columns:
-                db_policy.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
+                db_alert.work_status = row[constants.POLICY_ALERT_WORK_STATUS_COLUMN]
             if constants.POLICY_ALERT_CATEGORY_COLUMN in df_policy_alert.columns:
-                db_policy.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
+                db_alert.alert_category = row[constants.POLICY_ALERT_CATEGORY_COLUMN]
             if constants.POLICY_ALERT_SUB_CATEGORY_COLUMN in df_policy_alert.columns:
-                db_policy.alert_sub_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
-            alert_instances.append(db_policy_alert)
+                db_alert.alert_sub_category = row[constants.POLICY_ALERT_SUB_CATEGORY_COLUMN]
+            alert_instances.append(db_alert)
     PolicyAlert.objects.bulk_create(alert_instances)
     return len(alert_instances)
 
