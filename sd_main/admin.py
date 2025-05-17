@@ -21,7 +21,15 @@ class PolicyAdmin(admin.ModelAdmin):
     list_display = ('number', 'customer', 'start_date', 'end_date', 'lob')
 
 class PolicyAlertAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'policy', 'alert_level', 'due_date', 'created_date', 'work_status', 'alert_category','alert_sub_category', 'agency')
+    list_display = ('customer_name', 'policy_number', 'alert_level', 'due_date', 'created_date', 'work_status', 'alert_category','alert_sub_category', 'agency_name')
+    def customer_name(self, obj):
+        return obj.customer.name
+    
+    def policy_number(self, obj):
+        return obj.policy.number
+    
+    def agency_name(self, obj):
+        return obj.agency.name
 
 
 # Register the admin class with the associated model
