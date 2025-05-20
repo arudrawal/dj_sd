@@ -4,6 +4,21 @@ from django.urls import reverse
 from django.conf import settings
 from . import constants
 
+class SystemSetting(models.Model):
+    GMAIL_CLIENT_ID = 'gmail_client_id'
+    SYSTEM_NAME_CHOICES = {
+        GMAIL_CLIENT_ID: GMAIL_CLIENT_ID,
+    }
+    name = models.TextField(max_length=100, blank=False)
+    text_value =  models.TextField(max_length=1024)
+    json_value = models.JSONField()
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_system_setting')
+        ]
+    def __str__(self):
+        return f"{self.name}"
+
 """ Insurance Carrier. """
 class Company(models.Model):
     name = models.CharField(max_length=128, unique=True)
@@ -43,14 +58,20 @@ class AgencySetting(models.Model):
     POLICY_CSV_MAP = 'policy_csv_map'
     CUSTOMER_CSV_MAP = 'customer_csv_map'
     ALER_CSV_MAP = 'alert_csv_map'
+    AGENCY_OAUTH_SERVER = 'oauth_server' # Google, Office, AWS
+    AGENCY_OAUTH_TOKEN = 'oauth_token'   # Granted Token
+    AGENCY_OAUTH_EMAIL = 'oauth_email'   # Email account - used to send emails
     NAME_CHOICES = {
         POLICY_CSV_MAP: POLICY_CSV_MAP,
         CUSTOMER_CSV_MAP: CUSTOMER_CSV_MAP,
         ALER_CSV_MAP: ALER_CSV_MAP,
+        AGENCY_OAUTH_SERVER: AGENCY_OAUTH_SERVER,
+        AGENCY_OAUTH_TOKEN: AGENCY_OAUTH_TOKEN,
+        AGENCY_OAUTH_EMAIL: AGENCY_OAUTH_EMAIL,
     }
-    name = models.CharField(max_length=100, choices=NAME_CHOICES, blank=False)
-    text_value =  models.TextField(max_length=1024)
-    json_value = models.JSONField()
+    name = models.TextField(max_length=100, blank=False)
+    text_value =  models.TextField(max_length=1024, null=True)
+    json_value = models.JSONField(null=True)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
     class Meta:
         constraints = [

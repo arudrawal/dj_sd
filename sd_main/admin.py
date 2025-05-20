@@ -1,18 +1,30 @@
 from django.contrib import admin
 from .models import Company, Customer, Agency, AgencySetting, AgencyUser, PolicyAlert
-from .models import Driver, Vehicle, Policy, PolicyDocument
+from .models import Driver, Vehicle, Policy, PolicyDocument, SystemSetting
 
 # Register your models here.
 # admin.site.register(Policy)
 # Define the admin class
+class SystemSettingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'text_value', 'json_value')
+
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ('name', 'created_at')
 
 class AgencyAdmin(admin.ModelAdmin):
     list_display = ('name', 'company', 'contact')
 
+class AgencyUserAdmin(admin.ModelAdmin):
+    list_display = ('agency_name', 'user_name')
+    def agency_name(self, obj):
+        return obj.agency.name
+    def user_name(self, obj):
+        return obj.user.username
+
 class AgencySettingAdmin(admin.ModelAdmin):
-    list_display = ('agency', 'name', 'text_value', 'json_value')
+    list_display = ('agency_name', 'name', 'text_value', 'json_value')
+    def agency_name(self, obj):
+        return obj.agency.name
 
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'phone', 'agency')
@@ -33,9 +45,10 @@ class PolicyAlertAdmin(admin.ModelAdmin):
 
 
 # Register the admin class with the associated model
+admin.site.register(SystemSetting, SystemSettingAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Agency, AgencyAdmin)
-admin.site.register(AgencyUser)
+admin.site.register(AgencyUser, AgencyUserAdmin)
 admin.site.register(AgencySetting, AgencySettingAdmin)
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Policy, PolicyAdmin)

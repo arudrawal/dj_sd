@@ -1,6 +1,7 @@
 import os
 import sys
 import django
+import json
 
 SUPER_USER = 'admin'
 SUPER_PASS = 'secret1#'
@@ -178,6 +179,20 @@ def create_agency_users():
 
 def create_agency_settings(db_agencies_by_name):
     from sd_main.models import AgencySetting
+    
+    AGENCY_OAUTH_SETTINGS = {
+        AGENCIES[0]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'archana@shivark.com'},
+        AGENCIES[1]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'mukesh@shivark.com'},
+        AGENCIES[2]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'ajay@shivark.com'},
+    }
+    
+    for agency_name, agency_setting in AGENCY_OAUTH_SETTINGS.items():
+        db_agency = db_agencies_by_name[agency_name]
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_SERVER).exists():
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_SERVER, text_value=agency_setting[AgencySetting.AGENCY_OAUTH_SERVER])
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL).exists():
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL, text_value=agency_setting[AgencySetting.AGENCY_OAUTH_EMAIL])
+
     for agency_name, customer_csv_map in CUSTOMER_MAP.items():
         db_agency = db_agencies_by_name[agency_name]
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.CUSTOMER_CSV_MAP).exists():
@@ -192,7 +207,18 @@ def create_agency_settings(db_agencies_by_name):
         db_agency = db_agencies_by_name[agency_name]
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).exists():
             AgencySetting.objects.create(agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
-    
+
+def load_gmail_client_id():
+    from sd_main.models import SystemSetting
+    try:
+        if os.path.exists("sd_main/credentials.json"):
+            with open("sd_main/credentials.json", "r") as client_id_file:
+                client_id_data = json.load(client_id_file)
+                SystemSetting.objects.create(name='google', json_value=client_id_data)
+                return True
+    except Exception as e:
+        print(e)
+    return False
 
 if __name__ == '__main__':
    new_root = os.path.join(os.path.dirname(__file__), '..')
@@ -214,4 +240,6 @@ if __name__ == '__main__':
    print (f"Created Agency Settings")
    create_agency_users()
    print (f"Created Agency Users")
+   if load_gmail_client_id():
+    print (f"Added gmail OAUTH client")
 
