@@ -117,7 +117,7 @@ def get_attachments(service, user_id, msg_id, store_dir):
   except Exception as error:
     print('An error occurred: %s' % error)
   
-def main():
+def send_text_email(to_list: list, subject: str, email_text: str):
   """Shows basic usage of the Gmail API.
   Lists the user's Gmail labels.
   """
@@ -141,10 +141,12 @@ def main():
       token.write(creds.to_json())
 
   try:
+    sender="krudrawal@gmail.com"
     # Call the Gmail API
     service = build("gmail", "v1", credentials=creds)
-    message = create_message("krudrawal@gmail.com", "arudrawal@gmail.com", "Test OAUTH gmail", "test message from gmail oauth")
-    send_message(service, "krudrawal@gmail.com", message)
+    for to in to_list:
+        message = create_message(sender=sender, to=to, subject=subject, message_text=email_text)
+    send_message(service, sender, message)
     # results = service.users().labels().list(userId="krudrawal@gmail.com").execute()
     # labels = results.get("labels", [])
     # if not labels:
@@ -159,4 +161,4 @@ def main():
     print(f"An error occurred: {error}")
 
 if __name__ == "__main__":
-  main()
+  send_text_email(['arudrawal@gmail.com'], subject="Test OAUTH gmail", email_text="test message from gmail oauth")
