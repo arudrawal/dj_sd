@@ -161,4 +161,4 @@ def send_text_email(to_list: list, subject: str, email_text: str):
     print(f"An error occurred: {error}")
 
 if __name__ == "__main__":
-  send_text_email(['arudrawal@gmail.com'], subject="Test OAUTH gmail", email_text="test message from gmail oauth")
+  send_text_email(to_list = ['arudrawal@gmail.com'], subject="Test OAUTH gmail", email_text="test message from gmail oauth")
