@@ -68,10 +68,10 @@
                     <!--begin:Menu item-->
                     <div  class="menu-item">
                         <!--begin:Menu link-->
-                        {% url 'settings' as settings_url %}
-                        <a class="menu-link {% if request.path == settings_url %}active{% endif %}" href="{{settings_url}}">
+                        {% url 'email_oauth' as email_oauth_url %}
+                        <a class="menu-link {% if request.path == email_oauth_url %}active{% endif %}" href="{{email_oauth_url}}">
                             {# <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>#}
-                            <span class="menu-title">Settings</span>
+                            <span class="menu-title">Email Gateway</span>
                         </a> <!--end:Menu link-->
                     </div><!--end:Menu item-->
                 </div>

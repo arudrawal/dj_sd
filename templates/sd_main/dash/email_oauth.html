@@ -35,7 +35,7 @@
         <!--begin::Body-->
         <div class="card-body py-3">
             <!--begin::Form-->
-            <form id="kt_docs_formvalidation_text" class="form" action="{% url 'settings' %}" autocomplete="off" method="post">
+            <form id="kt_docs_formvalidation_text" class="form" action="{% url 'email_oauth' %}" autocomplete="off" method="post">
                 {% csrf_token %}
                 <!--begin::Input group-->
                 <div class="fv-row mb-10">
@@ -88,24 +88,10 @@
     <br/>
     <!-- <div class="separator border-2 my-10"></div> -->
     <!--begin::Body-->
-    {% if email and provider and client_id %}
+    {% if email and provider and auth_url %}
     <div class="card shadow-sm">
         <div class="card-body">
-            <!--begin::Form-->
-            <form id="kt_docs_authorize" class="form" action="{% url 'gmail_oauth_redirect' %}" autocomplete="off" method="post">
-                {% csrf_token %}
-                <!--begin::Actions-->
-                <button id="kt_docs_formvalidation_text_submit" type="submit" class="btn btn-primary">
-                    <span class="indicator-label">
-                        Authorize to send Email from {{provider}}: {{email}}
-                    </span>
-                    <span class="indicator-progress">
-                        Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                    </span>
-                </button>
-                <!--end::Actions-->
-            </form>
-            <!--end::Form-->
+            <a href="{{auth_url}}" class="btn btn-light-primary" target="_blank">Authorize to send Email from {{provider}}: {{email}}</a>
         </div>
     </div>
     {% endif %}
