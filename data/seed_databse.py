@@ -181,15 +181,15 @@ def create_agency_settings(db_agencies_by_name):
     from sd_main.models import AgencySetting
     
     AGENCY_OAUTH_SETTINGS = {
-        AGENCIES[0]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'archana@shivark.com'},
-        AGENCIES[1]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'mukesh@shivark.com'},
-        AGENCIES[2]['name']: {AgencySetting.AGENCY_OAUTH_SERVER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'ajay@shivark.com'},
+        AGENCIES[0]['name']: {AgencySetting.AGENCY_OAUTH_PROVIDER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'archana@shivark.com'},
+        AGENCIES[1]['name']: {AgencySetting.AGENCY_OAUTH_PROVIDER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'mukesh@shivark.com'},
+        AGENCIES[2]['name']: {AgencySetting.AGENCY_OAUTH_PROVIDER: 'google', AgencySetting.AGENCY_OAUTH_EMAIL: 'ajay@shivark.com'},
     }
     
     for agency_name, agency_setting in AGENCY_OAUTH_SETTINGS.items():
         db_agency = db_agencies_by_name[agency_name]
-        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_SERVER).exists():
-            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_SERVER, text_value=agency_setting[AgencySetting.AGENCY_OAUTH_SERVER])
+        if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_PROVIDER).exists():
+            AgencySetting.objects.create(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_PROVIDER, text_value=agency_setting[AgencySetting.AGENCY_OAUTH_PROVIDER])
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL).exists():
             AgencySetting.objects.create(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL, text_value=agency_setting[AgencySetting.AGENCY_OAUTH_EMAIL])
 
@@ -208,17 +208,25 @@ def create_agency_settings(db_agencies_by_name):
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).exists():
             AgencySetting.objects.create(agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
 
-def load_gmail_client_id():
+def load_system_settings():
     from sd_main.models import SystemSetting
-    try:
-        if os.path.exists("sd_main/credentials.json"):
-            with open("sd_main/credentials.json", "r") as client_id_file:
-                client_id_data = json.load(client_id_file)
-                SystemSetting.objects.create(name='google', json_value=client_id_data)
-                return True
-    except Exception as e:
-        print(e)
-    return False
+    db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+    ret_val = False
+    if not db_gmail_client:
+        try:
+            if os.path.exists("sd_main/credentials.json"):
+                with open("sd_main/credentials.json", "r") as client_id_file:
+                    client_id_data = json.load(client_id_file)
+                    db_gmail_client = SystemSetting.objects.create(name=SystemSetting.GMAIL_CLIENT_ID, json_value=client_id_data)
+                    ret_val = True
+        except Exception as e:
+            print(e)
+    db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
+    if not db_gmail_redirect_url:
+        db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL,
+                                                text_value='http://localhost:8000/gmail_oauth_callback/')
+        ret_val = True
+    return ret_val
 
 if __name__ == '__main__':
    new_root = os.path.join(os.path.dirname(__file__), '..')
@@ -240,6 +248,6 @@ if __name__ == '__main__':
    print (f"Created Agency Settings")
    create_agency_users()
    print (f"Created Agency Users")
-   if load_gmail_client_id():
-    print (f"Added gmail OAUTH client")
+   if load_system_settings():
+        print (f"Added System Settings Gmail OAUTH client/Redirect URL")
 

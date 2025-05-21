@@ -6,12 +6,10 @@ from . import constants
 
 class SystemSetting(models.Model):
     GMAIL_CLIENT_ID = 'gmail_client_id'
-    SYSTEM_NAME_CHOICES = {
-        GMAIL_CLIENT_ID: GMAIL_CLIENT_ID,
-    }
-    name = models.TextField(max_length=100, blank=False)
-    text_value =  models.TextField(max_length=1024)
-    json_value = models.JSONField()
+    GMAIL_REDIRECT_URL = 'gmail_redirect_url'
+    name = models.TextField(max_length=100, null=False, blank=False)
+    text_value =  models.TextField(max_length=1024, null=True)
+    json_value = models.JSONField(null=True)
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['name'], name='unique_system_setting')
@@ -58,17 +56,21 @@ class AgencySetting(models.Model):
     POLICY_CSV_MAP = 'policy_csv_map'
     CUSTOMER_CSV_MAP = 'customer_csv_map'
     ALER_CSV_MAP = 'alert_csv_map'
-    AGENCY_OAUTH_SERVER = 'oauth_server' # Google, Office, AWS
+    AGENCY_OAUTH_PROVIDER = 'oauth_provider' # Google, Office, AWS
     AGENCY_OAUTH_TOKEN = 'oauth_token'   # Granted Token
     AGENCY_OAUTH_EMAIL = 'oauth_email'   # Email account - used to send emails
+    
     NAME_CHOICES = {
         POLICY_CSV_MAP: POLICY_CSV_MAP,
         CUSTOMER_CSV_MAP: CUSTOMER_CSV_MAP,
         ALER_CSV_MAP: ALER_CSV_MAP,
-        AGENCY_OAUTH_SERVER: AGENCY_OAUTH_SERVER,
+        AGENCY_OAUTH_PROVIDER: AGENCY_OAUTH_PROVIDER,
         AGENCY_OAUTH_TOKEN: AGENCY_OAUTH_TOKEN,
         AGENCY_OAUTH_EMAIL: AGENCY_OAUTH_EMAIL,
     }
+    # This goes to name for
+    AUTH_PRIVIDER_GOOGLE = 'google'
+
     name = models.TextField(max_length=100, blank=False)
     text_value =  models.TextField(max_length=1024, null=True)
     json_value = models.JSONField(null=True)

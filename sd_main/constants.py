@@ -1,3 +1,7 @@
+GMAIL_SCOPES = [# 'https://www.googleapis.com/auth/drive.metadata.readonly',
+                # 'https://www.googleapis.com/auth/calendar.readonly'
+                "https://www.googleapis.com/auth/gmail.send"
+                ]
 
 # DF_HASH_KEY = "hash_key"
 DF_CUSTOMER_HASH_KEY = "customer_hash_key"

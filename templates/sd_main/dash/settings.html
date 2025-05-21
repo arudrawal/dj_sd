@@ -1,0 +1,120 @@
+{% extends "../index.html" %}
+{% block page_script %}
+<script>
+    function submitSelectForm(alert_id) {
+        const parentForm = document.getElementById("form_select_alert_"+alert_id);
+        parentForm.submit();
+    }
+    $("#dj_notification_table").DataTable();
+</script>
+{% endblock %}
+{% block content %}
+<!--begin:: Contents -->
+<div id="kt_app_content" class="app-content  flex-column-fluid ">
+    <!--begin::Content container-->
+    <div id="kt_app_content_container" class="app-container  container-xxl ">
+        <!--begin::Row-->
+        <div class="row g-5 g-xl-8">
+            <!--begin::Col-->
+            <div class="col-xl-12">
+<!--begin:: Tables widget 13-->
+<div class="card mb-5 mb-xl-8">
+    <div class="card shadow-sm">
+        <!--begin::Header-->
+        <div class="card-header border-0 pt-5">
+            <h3 class="card-title align-items-start flex-column">
+                <span class="card-label fw-bold fs-3 mb-1">Agency Settings</span>
+                {#<span class="text-muted mt-1 fw-semibold fs-7">Over 500 orders</span> #}
+            </h3>
+            <!-- <div class="card-toolbar">
+                <a href="#" class="btn btn-sm btn-light-primary"> 
+                    <i class="ki-duotone ki-plus fs-2"></i>New Settings</a>
+            </div> -->
+        </div>
+        <!--end::Header-->
+        <!--begin::Body-->
+        <div class="card-body py-3">
+            <!--begin::Form-->
+            <form id="kt_docs_formvalidation_text" class="form" action="{% url 'settings' %}" autocomplete="off" method="post">
+                {% csrf_token %}
+                <!--begin::Input group-->
+                <div class="fv-row mb-10">
+                    <!--begin::Label-->
+                    <label class="required fw-semibold fs-6 mb-2">Provider</label>
+                    <!--end::Label-->
+
+                    <!--begin::Select-->
+                    <select class="form-select" aria-label="Select example" name="provider">
+                        <option>Open this select menu</option>
+                        {%if provider == 'google' %}
+                        <option value="{{provider}}" selected>Google</option>
+                        {% else %}
+                        <option value="google">Google</option>
+                        {% endif %}
+                    </select>
+                    <!--end::Select-->
+                </div>
+                <div class="fv-row mb-10">
+                    <!--begin::Label-->
+                    <label class="required fw-semibold fs-6 mb-2">Email</label>
+                    <!--end::Label-->
+                    <input type="text" class="form-control" placeholder="name@example.com" name='email' {% if email %} value="{{email}}"{% endif %}/>
+                </div>
+                <!--end::Input group-->
+
+                <!--begin::Actions-->
+                <button id="kt_docs_formvalidation_text_submit" type="submit" class="btn btn-primary">
+                    <span class="indicator-label">
+                        Sumbit
+                    </span>
+                    <span class="indicator-progress">
+                        Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                    </span>
+                </button>
+                <button id="kt_docs_formvalidation_text_submit" type="submit" class="btn btn-primary">
+                    <span class="indicator-label">
+                        Clear Email Provider
+                    </span>
+                    <span class="indicator-progress">
+                        Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                    </span>
+                </button>
+                <!--end::Actions-->
+            </form>
+            <!--end::Form-->
+        </div>
+        <!--end::Body-->
+    </div>
+    <br/>
+    <!-- <div class="separator border-2 my-10"></div> -->
+    <!--begin::Body-->
+    {% if email and provider and client_id %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!--begin::Form-->
+            <form id="kt_docs_authorize" class="form" action="{% url 'gmail_oauth_redirect' %}" autocomplete="off" method="post">
+                {% csrf_token %}
+                <!--begin::Actions-->
+                <button id="kt_docs_formvalidation_text_submit" type="submit" class="btn btn-primary">
+                    <span class="indicator-label">
+                        Authorize to send Email from {{provider}}: {{email}}
+                    </span>
+                    <span class="indicator-progress">
+                        Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                    </span>
+                </button>
+                <!--end::Actions-->
+            </form>
+            <!--end::Form-->
+        </div>
+    </div>
+    {% endif %}
+	<!--begin::Body-->
+
+</div>
+<!--end:: Tables widget 13-->
+            </div> <!--end::Col-->
+        </div><!--end::Row-->
+    </div><!--end::Content container-->
+</div><!--end:: Contents -->
+{% endblock %}

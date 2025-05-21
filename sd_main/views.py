@@ -1,3 +1,6 @@
+import json
+import tempfile
+from io import StringIO
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage
@@ -5,8 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from .forms import UploadPolicyForm
 from .forms import AgencyForm
+from . import constants
 
-from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+
+from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer,\
+                    SystemSetting
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
@@ -94,6 +102,91 @@ def policies(request):
         return redirect('login_agency')
     context_dict['policies'] = policies
     return render(request, 'sd_main/dash/policies.html', context_dict)
+
+@login_required
+def settings(request):
+    context_dict = get_common_context(request, 'Agency Settings')
+    db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
+    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    db_gmail_client = None
+    if db_gmail_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
+        db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+    if request.method == "POST":
+        provider = request.POST.get('provider')
+        if provider:            
+            if db_gmail_provider:
+                db_gmail_provider.text_value = provider.lower()
+                db_gmail_provider.save()
+            else:
+                db_gmail_provider = AgencySetting.objects.create(agency=context_dict['agency'],
+                                                    name=AgencySetting.AGENCY_OAUTH_PROVIDER, text_value=provider)
+        provider_email = request.POST.get('email')
+        if provider_email:
+            if db_gmail:
+                db_gmail.text_value = provider_email.lower()
+                db_gmail.save()
+            else:
+                db_gmail = AgencySetting.objects.create(agency=context_dict['agency'],
+                                                    name=AgencySetting.AGENCY_OAUTH_EMAIL, text_value=provider_email)
+    context_dict['provider'] = db_gmail_provider.text_value if db_gmail_provider else None
+    context_dict['email'] = db_gmail.text_value if db_gmail else None
+    context_dict['client_id'] = db_gmail_client
+    return render(request, 'sd_main/dash/settings.html', context_dict)
+
+@login_required
+def gmail_oauth_redirect(request):
+    context_dict = get_common_context(request, 'Agency Settings')
+    db_agency = context_dict['agency']
+    db_setting_provider = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
+    db_setting_email = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    db_gmail_client = db_gmail_redirect_url = None
+    if db_setting_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
+        db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+        db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
+    if db_gmail_client and db_gmail_redirect_url:
+        text_client_secret = json.dumps(db_gmail_client.json_value)
+        file_client_secret = f"{tempfile.gettempdir()}/client_secret.json"
+        with open(file_client_secret, "w") as file:
+            file.write(text_client_secret)       
+        # Required, call the from_client_secrets_file method to retrieve the client ID from a
+        # client_secret.json file. The client ID (from that file) and access scopes are required. (You can
+        # also use the from_client_config method, which passes the client configuration as it originally
+        # appeared in a client secrets file but doesn't access the file itself.)
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(file_client_secret, scopes=constants.GMAIL_SCOPES)
+
+        # Required, indicate where the API server will redirect the user after the user completes
+        # the authorization flow. The redirect URI is required. The value must exactly
+        # match one of the authorized redirect URIs for the OAuth 2.0 client, which you
+        # configured in the API Console. If this value doesn't match an authorized URI,
+        # you will get a 'redirect_uri_mismatch' error.
+        flow.redirect_uri = db_gmail_redirect_url.text_value
+
+        # Generate URL for request to Google's OAuth 2.0 server.
+        # Use kwargs to set optional request parameters.
+        authorization_url, state = flow.authorization_url(
+            # Recommended, enable offline access so that you can refresh an access token without
+            # re-prompting the user for permission. Recommended for web server apps.
+            access_type='offline',
+            # Optional, enable incremental authorization. Recommended as a best practice.
+            include_granted_scopes='true',
+            # Optional, if your application knows which user is trying to authenticate, it can use this
+            # parameter to provide a hint to the Google Authentication Server.
+            login_hint=db_setting_email.text_value, # 'hint@example.com',
+            # Optional, set prompt to 'consent' will prompt the user for consent
+            prompt='consent')
+        return redirect(authorization_url)
+    return redirect('settings')
+        
+@login_required
+def gmail_oauth_callback(request):
+    pass
+
+@login_required
+def gmail_oauth_revoke(request):
+    pass
+    # requests.post('https://oauth2.googleapis.com/revoke',
+    #    params={'token': credentials.token},
+    #    headers = {'content-type': 'application/x-www-form-urlencoded'})
 
 @login_required
 def vehicles(request):
