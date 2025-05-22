@@ -237,12 +237,12 @@ def gmail_oauth_callback(request):
         # Store the credentials in database
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
         if db_token:
-            db_token.json_value = json.loads(creds.to_json())
+            db_token.json_value = creds.to_json()
             db_token.save()
         else:
             db_token = AgencySetting.objects.create(agency=context_dict['agency'],
                                                     name=AgencySetting.AGENCY_OAUTH_TOKEN, 
-                                                    json_value=json.loads(creds.to_json()))
+                                                    json_value=creds.to_json())
     """
     gmail_credentials= {
         'token': creds.token,
@@ -278,16 +278,38 @@ def gmail_oauth_revoke(request):
 
 @login_required
 def email_oauth_test(request):
+    import base64
+    from email.message import EmailMessage
     from googleapiclient.discovery import build
-    from .gmail_api import create_message, send_message
+    # from .gmail_api import create_message, send_message
     context_dict = get_common_context(request, 'Gmail Callback')
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
     creds = get_gmail_credentials(context_dict['agency'])
+    try: 
+        service = build('gmail', 'v1', credentials=creds)
+        msg = EmailMessage()
+        msg.set_content("test message from dj_sd")
+        msg['To'] = "rudrawal@avconnect.ai"
+        msg['From'] = db_gmail.text_value
+        msg['Subject'] = 'DJ_SD: Test email'
+        message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        body = {'raw': message}
+        send_message = (
+                service.users()
+                .messages()
+                .send(userId="me", body=body)
+                .execute()
+        )
+        print(F'Message Id: {send_message["id"]}')
+    except Exception as error:
+        print(F'An error occurred: {error}')
+    """
     service = build("gmail", "v1", credentials=creds)
     subject="Test OAUTH gmail", 
     email_text="test message from gmail oauth"
     message = create_message(sender=db_gmail.text_value, to='ajay_rudrawal@hotmail.com', subject=subject, message_text=email_text)
     send_message(service, db_gmail.text_value, message)
+    """
     return redirect("email_oauth")
 
 @login_required
