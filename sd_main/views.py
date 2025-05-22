@@ -18,6 +18,12 @@ from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Cust
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
+# Remove an object from the session
+def remove_object_from_session(request, key):
+    if key in request.session:
+        del request.session[key]
+        # Save the session after modification
+        request.session.modified = True
 
 def get_common_context(request, page_title: str):
     context_dict = {'page_title': page_title, 'session_data': request.session,'agency': None}
@@ -103,32 +109,31 @@ def policies(request):
     context_dict['policies'] = policies
     return render(request, 'sd_main/dash/policies.html', context_dict)
 
-def get_google_auth_flow(db_auth_provider, db_auth_email):
+def get_google_auth_flow():
     db_gmail_client = db_gmail_redirect_url = None
-    if db_auth_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
-        db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
-        db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
-        if db_gmail_client and db_gmail_redirect_url:
-            text_client_secret = json.dumps(db_gmail_client.json_value)
-            file_client_secret = f"{tempfile.gettempdir()}/client_secret.json"
-            with open(file_client_secret, "w") as file:
-                file.write(text_client_secret)       
-            # Required, call the from_client_secrets_file method to retrieve the client ID from a
-            # client_secret.json file. The client ID (from that file) and access scopes are required. (You can
-            # also use the from_client_config method, which passes the client configuration as it originally
-            # appeared in a client secrets file but doesn't access the file itself.)
-            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(file_client_secret, scopes=constants.GMAIL_SCOPES)
+    db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+    db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
+    if db_gmail_client and db_gmail_redirect_url:
+        text_client_secret = json.dumps(db_gmail_client.json_value)
+        file_client_secret = f"{tempfile.gettempdir()}/client_secret.json"
+        with open(file_client_secret, "w") as file:
+            file.write(text_client_secret)       
+        # Required, call the from_client_secrets_file method to retrieve the client ID from a
+        # client_secret.json file. The client ID (from that file) and access scopes are required. (You can
+        # also use the from_client_config method, which passes the client configuration as it originally
+        # appeared in a client secrets file but doesn't access the file itself.)
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(file_client_secret, scopes=constants.GMAIL_SCOPES)
 
-            # Required, indicate where the API server will redirect the user after the user completes
-            # the authorization flow. The redirect URI is required. The value must exactly
-            # match one of the authorized redirect URIs for the OAuth 2.0 client, which you
-            # configured in the API Console. If this value doesn't match an authorized URI,
-            # you will get a 'redirect_uri_mismatch' error.
-            flow.redirect_uri = db_gmail_redirect_url.text_value
-            return flow
+        # Required, indicate where the API server will redirect the user after the user completes
+        # the authorization flow. The redirect URI is required. The value must exactly
+        # match one of the authorized redirect URIs for the OAuth 2.0 client, which you
+        # configured in the API Console. If this value doesn't match an authorized URI,
+        # you will get a 'redirect_uri_mismatch' error.
+        flow.redirect_uri = db_gmail_redirect_url.text_value
+        return flow
 
-def get_google_auth_url(db_auth_provider, db_auth_email):
-    flow = get_google_auth_flow(db_auth_provider, db_auth_email)
+def get_google_auth_url(db_auth_email):
+    flow = get_google_auth_flow()
     if flow:
         # Generate URL for request to Google's OAuth 2.0 server.
         # Use kwargs to set optional request parameters.
@@ -144,6 +149,29 @@ def get_google_auth_url(db_auth_provider, db_auth_email):
             # Optional, set prompt to 'consent' will prompt the user for consent
             prompt='consent')
         return authorization_url, state
+
+def get_gmail_credentials(db_agency: AgencySetting):
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    creds = None
+    db_token = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
+    # The file token.json stores the user's access and refresh tokens, and is
+    # created automatically when the authorization flow completes for the first
+    # time.
+    if db_token: # os.path.exists("token.json"):
+        text_token = json.dumps(db_token.json_value)
+        file_token = f"{tempfile.gettempdir()}/token.json"
+        with open(file_token, "w") as file:
+            file.write(text_token)
+        creds = Credentials.from_authorized_user_file(file_token, constants.GMAIL_SCOPES)
+        # If credentials expired, let the user refresh.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+                # Save the refreshed credentials for the next run
+                db_token.json_value = creds.to_json()
+                db_token.save()
+    return creds
 
 @login_required
 def email_oauth(request):
@@ -176,31 +204,45 @@ def email_oauth(request):
     if db_gmail_provider and db_gmail:
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
         context_dict['auth_token'] = db_token.json_value if db_token else None
-        auth_url, state = get_google_auth_url(db_gmail_provider, db_gmail)
+        auth_url, state = get_google_auth_url(db_gmail)
         context_dict['auth_url'] = auth_url
     return render(request, 'sd_main/dash/email_oauth.html', context_dict)
-        
+
+@login_required
+def gmail_oauth_redirect(request):
+    context_dict = get_common_context(request, 'Agency Settings')
+    # db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
+    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    auth_url, state = get_google_auth_url(db_gmail)
+    request.session['state'] = state
+    return redirect(auth_url)
+
 # @login_required - not required
 # sample: http://localhost:8000/accounts/login/?next=/gmail_oauth_callback/%3Fstate%3DZiNxYBOuAFxlA45t7JeBMOxGxld6FY%26code%3D4/0AUJR-x4LXrMoL_3erqmJqfb9lYJytm3R7IHWYmoPiB_if0pSkyhS12DkFKRy-XX7RmpemQ%26scope%3Dhttps%3A//www.googleapis.com/auth/gmail.send
 # How do we know: agency from callback ?
 def gmail_oauth_callback(request):
-    context_dict = get_common_context(request, 'Agency Settings')
-    db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
-    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
-
+    request_state = session_state =  None
     if 'code' not in request.GET:
         return HttpResponse("Authorization failed", status=400)
-    
-    flow = get_google_auth_flow(db_gmail_provider, db_gmail)
-    flow.fetch_token(code=request.GET['code'])
-    creds = flow.credentials
-    # Store the credentials in database
-    db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
-    if db_token:
-        db_token.json_value = creds.to_json()
-        db_token.save()
-    else:
-        db_token = AgencySetting.objects.create(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN, value_json=creds.to_json())
+    if 'state' in request.session:
+        session_state = request.session['state']
+    context_dict = get_common_context(request, 'Gmail Callback')
+    if 'state' in request.GET:        
+        request_state = request.GET['state']
+        remove_object_from_session('state')
+    if session_state == request_state and context_dict['agency']:
+        flow = get_google_auth_flow()
+        flow.fetch_token(code=request.GET['code']) # fetch and fill token from gmail
+        creds = flow.credentials
+        # Store the credentials in database
+        db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
+        if db_token:
+            db_token.json_value = json.loads(creds.to_json())
+            db_token.save()
+        else:
+            db_token = AgencySetting.objects.create(agency=context_dict['agency'],
+                                                    name=AgencySetting.AGENCY_OAUTH_TOKEN, 
+                                                    json_value=json.locads(creds.to_json()))
     """
     gmail_credentials= {
         'token': creds.token,
@@ -213,14 +255,21 @@ def gmail_oauth_callback(request):
         "account": "",
         "expiry": "2025-05-20T03:58:10.318793Z"
     } """
-    return HttpResponse("Gmail authentication successful!")
+    return redirect("email_oauth")
 
 @login_required
-def gmail_oauth_revoke(request):
-    pass
-    # requests.post('https://oauth2.googleapis.com/revoke',
-    #    params={'token': credentials.token},
-    #    headers = {'content-type': 'application/x-www-form-urlencoded'})
+def email_oauth_test(request):
+    from googleapiclient.discovery import build
+    from .gmail_api import create_message, send_message
+    context_dict = get_common_context(request, 'Gmail Callback')
+    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    creds = get_gmail_credentials(context_dict['agency'])
+    service = build("gmail", "v1", credentials=creds)
+    subject="Test OAUTH gmail", 
+    email_text="test message from gmail oauth"
+    message = create_message(sender=db_gmail.text_value, to='ajay_rudrawal@hotmail.com', subject=subject, message_text=email_text)
+    send_message(service, db_gmail.text_value, message)
+    return redirect("email_oauth")
 
 @login_required
 def vehicles(request):

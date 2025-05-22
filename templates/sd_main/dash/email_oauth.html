@@ -86,21 +86,28 @@
         <!--end::Body-->
     </div>
     <br/>
-    <!-- <div class="separator border-2 my-10"></div> -->
     <!--begin::Body-->
     {% if email and provider and auth_url %}
     <div class="card shadow-sm">
         <div class="card-body">
             {% if auth_token %}
-            <a href="{{auth_url}}" class="btn btn-light-warning" target="_blank">Revoke Authorization</a>
+            <a href="{%url 'gmail_oauth_redirect' %}" class="btn btn-light-warning">Revoke Authorization</a>
             {% else %}
-            <a href="{{auth_url}}" class="btn btn-light-primary" target="_blank">Authorize to send Email from {{provider}}: {{email}}</a>
+            <a href="{%url 'gmail_oauth_redirect' %}" class="btn btn-light-primary">Authorize to send Email from {{provider}}: {{email}}</a>
             {% endif %}
         </div>
     </div>
     {% endif %}
-	<!--begin::Body-->
-
+	<!--end::Body-->
+    <!--begin::Body-->
+    {% if auth_token %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <a href="{%url 'email_oauth_test' %}" class="btn btn-light-primary">Send Test Email from {{provider}}: {{email}}</a>
+        </div>
+    </div>
+    {% endif %}
+	<!--end::Body-->
 </div>
 <!--end:: Tables widget 13-->
             </div> <!--end::Col-->
