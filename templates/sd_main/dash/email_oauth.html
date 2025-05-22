@@ -91,9 +91,9 @@
     <div class="card shadow-sm">
         <div class="card-body">
             {% if auth_token %}
-            <a href="{%url 'gmail_oauth_redirect' %}" class="btn btn-light-warning">Revoke Authorization</a>
+            <a href="{%url 'gmail_oauth_revoke' %}" class="btn btn-light-warning">Revoke Authorization</a>
             {% else %}
-            <a href="{%url 'gmail_oauth_redirect' %}" class="btn btn-light-primary">Authorize to send Email from {{provider}}: {{email}}</a>
+            <a href="{%url 'gmail_oauth_authorize' %}" class="btn btn-light-primary">Authorize to send Email from {{provider}}: {{email}}</a>
             {% endif %}
         </div>
     </div>

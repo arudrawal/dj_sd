@@ -209,7 +209,7 @@ def email_oauth(request):
     return render(request, 'sd_main/dash/email_oauth.html', context_dict)
 
 @login_required
-def gmail_oauth_redirect(request):
+def gmail_oauth_authorize(request):
     context_dict = get_common_context(request, 'Agency Settings')
     # db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
@@ -229,7 +229,7 @@ def gmail_oauth_callback(request):
     context_dict = get_common_context(request, 'Gmail Callback')
     if 'state' in request.GET:        
         request_state = request.GET['state']
-        remove_object_from_session('state')
+        remove_object_from_session(request, 'state')
     if session_state == request_state and context_dict['agency']:
         flow = get_google_auth_flow()
         flow.fetch_token(code=request.GET['code']) # fetch and fill token from gmail
@@ -242,7 +242,7 @@ def gmail_oauth_callback(request):
         else:
             db_token = AgencySetting.objects.create(agency=context_dict['agency'],
                                                     name=AgencySetting.AGENCY_OAUTH_TOKEN, 
-                                                    json_value=json.locads(creds.to_json()))
+                                                    json_value=json.loads(creds.to_json()))
     """
     gmail_credentials= {
         'token': creds.token,
@@ -255,6 +255,24 @@ def gmail_oauth_callback(request):
         "account": "",
         "expiry": "2025-05-20T03:58:10.318793Z"
     } """
+    return redirect("email_oauth")
+
+@login_required
+def gmail_oauth_revoke(request):
+    # from google.auth.transport.requests import Request
+    context_dict = get_common_context(request, 'Email Auth Revoke')
+    # db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
+    # db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    credentials = get_gmail_credentials(context_dict['agency'])
+    revoke = request.post('https://oauth2.googleapis.com/revoke',
+      params={'token': credentials.token},
+      headers = {'content-type': 'application/x-www-form-urlencoded'})
+    status_code = getattr(revoke, 'status_code')
+    if status_code == 200:
+        print('Credentials successfully revoked.')
+        db_token = AgencySetting.objects.filter(agency= context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
+        if db_token:
+            db_token.delete()
     return redirect("email_oauth")
 
 @login_required
