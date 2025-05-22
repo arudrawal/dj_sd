@@ -259,12 +259,13 @@ def gmail_oauth_callback(request):
 
 @login_required
 def gmail_oauth_revoke(request):
+    import requests
     # from google.auth.transport.requests import Request
     context_dict = get_common_context(request, 'Email Auth Revoke')
     # db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
     # db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
     credentials = get_gmail_credentials(context_dict['agency'])
-    revoke = request.post('https://oauth2.googleapis.com/revoke',
+    revoke = requests.post('https://oauth2.googleapis.com/revoke',
       params={'token': credentials.token},
       headers = {'content-type': 'application/x-www-form-urlencoded'})
     status_code = getattr(revoke, 'status_code')

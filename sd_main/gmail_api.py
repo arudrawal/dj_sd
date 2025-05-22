@@ -18,13 +18,18 @@ from googleapiclient.errors import HttpError
 SCOPES = ["https://www.googleapis.com/auth/gmail.send", "https://www.googleapis.com/auth/gmail.readonly"]
 
 def create_message(sender, to, subject, message_text):
-  message = MIMEText(message_text)
-  message['to'] = to
-  message['from'] = sender
-  message['subject'] = subject
-  raw_message = base64.urlsafe_b64encode(message.as_string().encode("utf-8"))
+  from email.message import EmailMessage
+  # message = MIMEText(message_text)
+  message = EmailMessage()
+  message.set_content(message_text)
+  message['To'] = to
+  message['From'] = sender
+  # message['Subject'] = subject
+  message["Subject"] = "Automated draft"
+  # raw_message = base64.urlsafe_b64encode(message.as_string().encode("utf-8"))
+  encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
   return {
-    'raw': raw_message.decode("utf-8")
+    'raw': encoded_message
   }
 
 def create_draft(service, user_id, message_body):
