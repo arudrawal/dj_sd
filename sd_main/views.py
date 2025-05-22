@@ -234,15 +234,16 @@ def gmail_oauth_callback(request):
         flow = get_google_auth_flow()
         flow.fetch_token(code=request.GET['code']) # fetch and fill token from gmail
         creds = flow.credentials
+        token_json_value = json.loads(creds.to_json())
         # Store the credentials in database
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
         if db_token:
-            db_token.json_value = creds.to_json()
+            db_token.json_value = token_json_value
             db_token.save()
         else:
             db_token = AgencySetting.objects.create(agency=context_dict['agency'],
                                                     name=AgencySetting.AGENCY_OAUTH_TOKEN, 
-                                                    json_value=creds.to_json())
+                                                    json_value=token_json_value)
     """
     gmail_credentials= {
         'token': creds.token,
