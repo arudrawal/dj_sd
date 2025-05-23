@@ -1,12 +1,12 @@
 services:
- djsd:
+ djsd-web:
+   image: djsd:latest
    build: .
    network_mode: "host"
    working_dir: /dj_sd
-   image: djsd:latest
    volumes:
      - /home/ec2-user/dj_sd:/dj_sd
    ports:
-     - "8000:8000"
+     - "80:8000"
    environment:
      ROOT: /dj_sd
