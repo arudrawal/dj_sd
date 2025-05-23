@@ -1,7 +1,7 @@
 services:
  django-sd-web:
    build: .
-   container_name: django-docker
+   container_name: dj-docker
    network_mode: "host"
    working_dir: /dj_sd
    volumes:
