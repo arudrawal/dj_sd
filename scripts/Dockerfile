@@ -29,7 +29,7 @@ ARG USERNAME=sduser
 ARG GROUPNAME=sduser
 
 RUN groupadd --gid $GROUP_ID $GROUPNAME && \
-    useradd -m -d $APP_DIR -g $GROUP_ID -u $USER_ID $USERNAME
+    useradd -m -d /$APP_DIR -g $GROUP_ID -u $USER_ID $USERNAME
  
 # Copy the Python dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
