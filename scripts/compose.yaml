@@ -1,9 +1,9 @@
 services:
- django-sd-web:
+ djsd:
    build: .
-   container_name: dj-docker
    network_mode: "host"
    working_dir: /dj_sd
+   image: djsd:latest
    volumes:
      - /home/ec2-user/dj_sd:/dj_sd
    ports:
