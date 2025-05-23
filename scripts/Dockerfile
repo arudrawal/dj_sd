@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 RUN pip install --upgrade pip 
  
 # Copy the requirements file first (better caching)
-COPY requirements.txt /$APP_DIR/
+COPY ../requirements.txt /$APP_DIR/
  
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -45,7 +45,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Switch to non-root user
-USER appuser
+USER $USERNAME
  
 # Expose the application port
 EXPOSE 8000
