@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
  
 # Stage 2: Production stage
 FROM python:3.13-slim
-
+ARG APP_DIR=dj_sd 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG USERNAME=sduser
