@@ -179,7 +179,7 @@ def email_oauth(request):
     db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
     db_gmail_client = None
-    if db_gmail_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
+    if db_gmail_provider and db_gmail_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
         db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
     if request.method == "POST":
         provider = request.POST.get('provider')
