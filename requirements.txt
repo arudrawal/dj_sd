@@ -9,3 +9,4 @@ google-auth-httplib2
 gunicorn
 boto3
 python-dotenv
+whitenoise
