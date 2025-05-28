@@ -149,6 +149,7 @@ def get_google_auth_url(db_auth_email):
             # Optional, set prompt to 'consent' will prompt the user for consent
             prompt='consent')
         return authorization_url, state
+    return None, None
 
 def get_gmail_credentials(db_agency: AgencySetting):
     from google.auth.transport.requests import Request
