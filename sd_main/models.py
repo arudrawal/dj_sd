@@ -8,8 +8,8 @@ class SystemSetting(models.Model):
     GMAIL_CLIENT_ID = 'gmail_client_id'
     GMAIL_REDIRECT_URL = 'gmail_redirect_url'
     name = models.TextField(primary_key=True, max_length=100, null=False, blank=False)
-    text_value =  models.TextField(max_length=1024, null=True)
-    json_value = models.JSONField(null=True)
+    text_value =  models.TextField(max_length=1024, null=True, default=None)
+    json_value = models.JSONField(null=True, blank=True)
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['name'], name='unique_system_setting')

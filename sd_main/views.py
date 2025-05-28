@@ -56,7 +56,7 @@ def login_agency(request):
     db_user_agencies = AgencyUser.objects.filter(user=request.user).all()
     if db_user_agencies:
         if db_user_agencies.count() == 1:
-            request.session['agency_name'] = db_user_agencies[0].name
+            request.session['agency_name'] = db_user_agencies[0].agency.name
             return redirect('index')
     context_dict['agency_list'] = Agency.objects.all()
     # for agency in Agency.objects.all():
