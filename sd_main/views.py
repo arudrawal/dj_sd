@@ -205,7 +205,8 @@ def email_oauth(request):
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
         context_dict['auth_token'] = db_token.json_value if db_token else None
         auth_url, state = get_google_auth_url(db_gmail)
-        context_dict['auth_url'] = auth_url
+        if auth_url:
+            context_dict['auth_url'] = auth_url
     return render(request, 'sd_main/dash/email_oauth.html', context_dict)
 
 @login_required
