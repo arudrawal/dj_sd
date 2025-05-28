@@ -134,7 +134,7 @@ def get_google_auth_flow():
 
 def get_google_auth_url(db_auth_email):
     flow = get_google_auth_flow()
-    if flow:
+    if flow and db_auth_email:
         # Generate URL for request to Google's OAuth 2.0 server.
         # Use kwargs to set optional request parameters.
         authorization_url, state = flow.authorization_url(
