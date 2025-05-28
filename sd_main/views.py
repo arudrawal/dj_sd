@@ -203,10 +203,12 @@ def email_oauth(request):
     context_dict['email'] = db_gmail.text_value if db_gmail else None
     context_dict['client_id'] = db_gmail_client.json_value if db_gmail_client else None
     if db_gmail_provider and db_gmail:
+        context_dict['auth_token'] = None
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
-        context_dict['auth_token'] = db_token.json_value if db_token else None
+        if db_token:
+            context_dict['auth_token'] = db_token.json_value
         auth_url, state = get_google_auth_url(db_gmail)
-        if auth_url:
+        if auth_url and state:
             context_dict['auth_url'] = auth_url
     return render(request, 'sd_main/dash/email_oauth.html', context_dict)
 
