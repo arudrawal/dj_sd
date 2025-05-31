@@ -318,6 +318,11 @@ def email_oauth_test(request):
     return redirect("email_oauth")
 
 @login_required
+def send_email(request):
+    context_dict = get_common_context(request, 'Send Email')
+    return render(request, 'sd_main/email/renewal_reminder.html', context_dict)
+
+@login_required
 def vehicles(request):
     context_dict = get_common_context(request, 'Vehicles')
     return render(request, 'sd_main/dash/vehicles.html', context_dict)

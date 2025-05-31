@@ -15,7 +15,8 @@ urlpatterns = [
     path("gmail_oauth_authorize/", views.gmail_oauth_authorize, name="gmail_oauth_authorize"),
     path("gmail_oauth_revoke/", views.gmail_oauth_revoke, name="gmail_oauth_revoke"),
     path("gmail_oauth_callback/", views.gmail_oauth_callback, name="gmail_oauth_callback"),
-    path("vehicles/", views.vehicles, name="vehicles"),
+    path("drivers/", views.drivers, name="drivers"),
+    path("send_email/", views.send_email, name="send_email"),
     path("drivers/", views.drivers, name="drivers"),
     path("upload_policy/", views.upload_policy, name="upload_policy"),
 ]
