@@ -47,13 +47,14 @@
                             </div>
                         </th>                        
                         <th class="min-w-120px">Alert</th>
-                        <th class="min-w-150px">Policy</th>
+                        <th class="min-w-120px">Policy</th>
                         <th class="min-w-120px">LOB</th>
                         <th class="min-w-140px">Owner</th>
-                        <th class="min-w-120px">Due Date</th>
+                        <th class="min-w-150px">Due Date</th>
                         <!--<th class="min-w-120px">Typr</th> -->
-                        <th class="min-w-120px">Email</th>
-                        <th class="min-w-120px">Phone</th>
+                        <!-- <th class="min-w-150px">Category</th> -->
+                        <!-- <th class="min-w-150px">Sub-Category</th> -->
+                        <th class="min-w-250px">Category/Sub-Category</th>
                         <th class="min-w-100px text-end">Actions</th>
                     </tr>
                 </thead>
@@ -71,40 +72,48 @@
                         </td>
                         <td>
                             {%if alert.alert_level|lower == 'critical' %}
-                            <span class="badge badge-light-danger">{{alert.alert_level}}</span>
+                                <span class="badge badge-light-danger">{{alert.alert_level}}</span>
+                            {% elif alert.alert_level|lower == 'pending'%}
+                                <span class="badge badge-light-warning">{{alert.alert_level}}</span>
+                                <!-- <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.alert_level}}</a> -->
                             {% else %}
-                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.alert_level}}</a>
+                                {{alert.alert_level}}
                             {% endif %}
                         </td>
                         
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.policy.number}}</a>
+                            <!-- <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{alert.policy.number}}</a> -->
+                             {{alert.policy.number}}
                         </td>
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.policy.lob}}</a>
+                            {{alert.policy.lob}}
+                            <!-- <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.policy.lob}}</a> -->
                             <!--<span class="text-muted fw-semibold text-muted d-block fs-7">Web, UI/UX Design</span> -->
                         </td>
                         
                         <td>
                             <!--<a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Brasil</a> -->
-                            <span class="text-muted fw-semibold text-muted d-block fs-7">{{alert.policy.customer.name}}</span>
+                            <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">{{alert.policy.customer.name}}</span> -->
+                             {{alert.policy.customer.name}}
                         </td>
 
                         <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.due_date|date:'Y-m-d'}}</a>
+                            {{alert.due_date|date:'Y-m-d'}}
+                            <!-- <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{alert.due_date|date:'Y-m-d'}}</a> -->
                             <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span> -->
                         </td>
 
                         <!--<td class="text-gray-900 fw-bold text-hover-primary fs-6">{{policy.policy_type}}</td> -->
 
                         <td>
-                            {{alert.alert_category}}
+                            {{alert.alert_category}}<br/>
+                            {{alert.alert_sub_category}}
                             <!-- <span class="badge badge-light-success">{{alert.policy.customer.email}}</span> -->
                         </td>
-                        <td>
-                            {{alert.alert_sub_category}}
+                        <!-- <td>
+                            {{alert.alert_sub_category}} -->
                             <!-- <span class="badge badge-light-success">{{alert.policy.customer.phone}}</span> -->
-                        </td>
+                        <!-- </td> -->
                         <td class="text-end">
                             <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-kt-menu-flip="top-end">
                                 Actions

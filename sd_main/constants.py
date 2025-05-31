@@ -30,3 +30,15 @@ POLICY_ALERT_CATEGORY_COLUMN = "alert_category"
 POLICY_ALERT_SUB_CATEGORY_COLUMN = "alert_sub_category"
 POLICY_ALERT_IS_ACTIVE_COLUMN = "is_active"
 
+DOC_MERGE_KEYWORDS = {
+    "customer_name": "Customer Name",
+    "insurance_company_name": "Insurance Company Name",
+    "policy_type": "Poilicy Type [Auto/Home/Life/Umbrella]",
+    "policy_number": "Policy Number",
+    "expiration_date" : "Expiration Date",
+    "premium_amount": "Premium Amount",
+    "renewal_link": "Renewal Link",
+    "agent_full_name": "Agent Fullname",
+    "agent_title": "Agent Title",
+    "contact_information": "Contact Information",
+}

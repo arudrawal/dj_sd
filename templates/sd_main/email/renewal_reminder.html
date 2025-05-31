@@ -1,0 +1,27 @@
+Subject: Reminder: Your Insurance Policy is Due for Renewal
+
+Dear {{customer_name}},
+
+We hope this message finds you well. This is a friendly reminder that your insurance policy with {{insurance_company_name}}, policy number {{policy_number}}, is set to expire on {{expiration_date}}.
+
+To ensure continued coverage without interruption, we recommend renewing your policy before the expiration date. Renewing now will give you peace of mind and avoid any potential gaps in coverage.
+
+Policy Details:
+
+Policy Type: {{policy_type}}
+
+Renewal Due Date: {{expiration_date}}
+
+Premium Amount: {{premium_amount}}
+{% if renewal_link %}
+Renew Now: {{renewal_link}}
+{% endif %}
+If you have any questions about your coverage, or if you’d like to make changes to your policy before renewal, please don’t hesitate to reach out. You can contact us at {{contact_phone_number}} or {{contact_email_address}}.
+
+Thank you for choosing {{insurance_company_name}}. We appreciate your continued trust.
+
+Warm regards,
+{{agent_full_name}}
+{{agent_title}}
+{{insurance_company_name}}
+{{contact_information}}
