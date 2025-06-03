@@ -1,10 +1,21 @@
 version: 1.0
-runtime: python3
+runtime: python311
 build:
   commands:
+    pre-build:
+      - wget -c https://s3.amazonaws.com/amzn-s3-demo-bucket/test-lib.tar.gz -O - | tar -xz
     build:
-      - pip install -r requirements.txt
+      - pip3 install pipenv
+      - pipenv install
+    post-build:
+      - python3 manage.py test
+
 run:
+  runtime-version: 3.11
+  pre-run:
+    - pip3 install pipenv
+    - pipenv install
+    - python3 copy-global-files.py
   command: sh startup.sh
   network:
     port: 8000
