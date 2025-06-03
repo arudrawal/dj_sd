@@ -37,6 +37,10 @@ def get_common_context(request, page_title: str):
         if db_user_agencies:
             if db_user_agencies.count() == 1: # only one agency auto-select it
                 context_dict['agency'] = db_user_agencies[0].agency
+    if 'selected_alert_id' in request.session:
+        db_alert = PolicyAlert.objects.get(id=int(request.session['selected_alert_id']))
+        if db_alert:
+            context_dict['alert'] = db_alert
     return context_dict
 
 # Create your views here.
