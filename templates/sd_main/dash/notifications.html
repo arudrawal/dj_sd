@@ -67,6 +67,7 @@
                         <td>
                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                 <input class="form-check-input widget-13-check" name='selected_alert' type="radio" value="{{alert.id}}"
+                                    onchange="submitSelectForm('{{alert.id}}');"
                                     {% if alert.id == session_data.selected_alert_id %}checked{% endif %} />
                             </div>
                         </td>

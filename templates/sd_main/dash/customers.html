@@ -37,11 +37,6 @@
                 <!--begin::Table head-->
                 <thead>
                     <tr class="fw-bold text-muted">
-                        <th class="w-25px">
-                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                <input class="form-check-input" type="checkbox" value="1" data-kt-check="true" data-kt-check-target=".widget-13-check">
-                            </div>
-                        </th>
                         <th class="min-w-150px">Name</th>
                         <th class="min-w-140px">Email</th>
                         <th class="min-w-120px">Phone</th>
@@ -55,33 +50,15 @@
                 <tbody>
                     {% for customer in customers %}
                     <tr>
-                        <td>
+                        <!--<td>
                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                 <input class="form-check-input widget-13-check" type="checkbox" value="1">
                             </div>
-                        </td>
-                        
-                        <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{customer.name}}</a>
-                        </td>
-                        
-                        <td>
-                            <!--<a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">Brasil</a> -->
-                            <span class="text-muted fw-semibold text-muted d-block fs-7">{{customer.email}}</span>
-                        </td>
-
-                        <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{customer.phone}}</a>
-                            <!-- <span class="text-muted fw-semibold text-muted d-block fs-7">Code: Paid</span> -->
-                        </td>
-
-                        <td>
-                            <a href="#" class="text-gray-900 fw-bold text-hover-primary d-block mb-1 fs-6">{{customer.dob}}</a>
-                            <!--<span class="text-muted fw-semibold text-muted d-block fs-7">Web, UI/UX Design</span> -->
-                        </td>
-
-                        <!--<td class="text-gray-900 fw-bold text-hover-primary fs-6">{{policy.policy_type}}</td> -->
-                        <!-- <td><span class="badge badge-light-success">{{customer.dob}}</span></td> -->
+                        </td> -->
+                        <td>{{customer.name}}</td>
+                        <td>{{customer.email}}</td>
+                        <td>{{customer.phone}}</td>
+                        <td>{{customer.dob}}</td>
                         <td class="text-end">
                             <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-kt-menu-flip="top-end">
                                 Actions
@@ -107,7 +84,7 @@
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link px-3" data-kt-docs-table-filter="delete_row">
-                                        Text
+                                        Edit
                                     </a>
                                 </div>
                                 <!--end::Menu item-->
