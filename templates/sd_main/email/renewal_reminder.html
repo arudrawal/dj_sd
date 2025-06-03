@@ -3,10 +3,36 @@
 <!--begin:: Contents -->
 <div id="kt_app_content" class="app-content  flex-column-fluid ">
     <!--begin::Content container-->
-    <div id="kt_app_content_container" class="app-container  container-xxl ">
+    <div id="kt_app_content_container" class="app-container container-xxl ">
+<!--begin::Alert-->
+<div class="alert alert-primary d-flex align-items-center p-5">
+    <!--begin::Wrapper-->
+    <div class="d-flex flex-column">
+        <!--begin::Title-->
+        <p><b>Selected Policy</b>: [policy_num], <b>Owner</b>: AAAAAAAAA AAAAAAAA, <b>Due Date:</b> 2025-05-07</p>
+        <!--end::Title-->
 
-Subject: Reminder: Your Insurance Policy is Due for Renewal
-
+        <!--begin::Content-->
+        <span>The alert component can be used to highlight certain parts of your page for higher content visibility.</span>
+        <!--end::Content-->
+    </div>
+    <!--end::Wrapper-->
+</div>
+<!--end::Alert-->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Title</h3>
+                <div class="card-toolbar">
+                    <button type="button" class="btn btn-sm btn-light">
+                        Action
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form>
+                <p>
+                <input type="text" value="Subject: Reminder: Your Insurance Policy is Due for Renewal"></input></p>
+                <textarea cols="80" rows="30">               
 Dear {{customer_name}},
 
 We hope this message finds you well. This is a friendly reminder that your insurance policy with {{insurance_company_name}}, policy number {{policy_number}}, is set to expire on {{expiration_date}}.
@@ -32,6 +58,10 @@ Warm regards,
 {{agent_title}}
 {{insurance_company_name}}
 {{contact_information}}
+                </textarea>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
