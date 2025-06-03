@@ -9,6 +9,11 @@ build:
       - pipenv install
     post-build:
       - python3 manage.py test
+  env:
+      - name: DJANGO_SETTINGS_MODULE
+        value: "django_apprunner.settings"
+      - name: MY_VAR_EXAMPLE
+        value: "example"
 
 run:
   runtime-version: 3.11
@@ -19,3 +24,4 @@ run:
   command: sh startup.sh
   network:
     port: 8000
+    env: MY_APP_PORT
