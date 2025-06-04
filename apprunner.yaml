@@ -8,3 +8,6 @@ run:
   command: sh startup.sh
   network:
     port: 8000
+  secrets:
+    - name: DATABASE_SECRET
+      value-from: "arn:aws:secretsmanager:us-west-2:198752717356:secret:SD_DB_SECRET-KflFAp"
