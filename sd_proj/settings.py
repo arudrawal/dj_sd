@@ -13,7 +13,32 @@ import os
 import json
 from os import environ
 from pathlib import Path
-import dj_database_url
+# Use this code snippet in your app.
+# If you need more information about configurations
+# or implementing the sample code, visit the AWS docs:
+# https://aws.amazon.com/developer/language/python/
+
+import boto3
+from botocore.exceptions import ClientError
+
+def get_secret():
+    secret_name = "SD_DB_SECRET"
+    region_name = "us-west-2"
+
+    # Create a Secrets Manager client
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=region_name
+    )
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+    return get_secret_value_response['SecretString']
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,10 +111,20 @@ WSGI_APPLICATION = 'sd_proj.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 # aws db name: sd_test
 if "DATABASE_SECRET" in environ:
-    database_secret = environ.get("DATABASE_SECRET")
-    db_url = json.loads(database_secret)["DATABASE_URL"]
-    DATABASES = {
-        "default": dj_database_url.parse(db_url)
+    print (f"DATABASE_SECRET: {environ.get('DATABASE_SECRET')}")
+    database_secret = get_secret();
+    if database_secret:
+        db_secret = json.loads(database_secret)
+        print (f"db_secret:{db_secret}")
+        DATABASES = {
+            "default": {
+                'ENGINE': 'django.db.backends.postgresql',
+                'HOST': db_secret['host'],
+                'PORT': db_secret['port'],
+                'NAME': db_secret['name'],
+                'USER': db_secret['username'],
+                'PASSWORD': db_secret['password']
+            }
         }
 else:
     DATABASES = {

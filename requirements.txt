@@ -1,6 +1,5 @@
 Django
 psycopg2-binary
-dj-database-url
 openpyxl
 pandas
 google-api-python-client
