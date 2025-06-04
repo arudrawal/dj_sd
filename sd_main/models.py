@@ -162,3 +162,45 @@ class Vehicle(models.Model):
     license_plate = models.CharField(max_length=50)
     reg_end_date = models.DateField()
     registered_owner = models.CharField(max_length=100)
+
+class TemplateType(models.TextChoices):
+    TEXT = 't', 'Text'
+    HTML = 'h', 'HTML'
+
+class EmailTemplate(models.Model):
+    company = models.ForeignKey("Company", on_delete=models.CASCADE)
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE, null=True)
+    name = models.CharField(max_length=128)
+    subject_line = models.CharField(max_length=50)
+    body = models.TextField()
+    template_type = models.CharField(max_length=1, choices=TemplateType.choices, default=TemplateType.TEXT)
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
+    category = models.CharField(max_length=100, null=True)
+    sub_category = models.CharField(max_length=100, null=True)
+
+# class GlobalEmailTemplate(models.Model):
+#     name = models.CharField(max_length=128)
+#     subject_line = models.CharField(max_length=50)
+#     body = models.TextField()
+#     template_type = models.CharField(max_length=1, choices=TemplateType.choices, default=TemplateType.TEXT)
+#     updated_at = models.DateField(auto_now=True)
+#     created_at = models.DateField(auto_now_add=True)
+#     category = models.CharField(max_length=100)
+#     sub_category = models.CharField(max_length=100)
+""""
+EmailTemplate
+primary_key: 
+agency: foreign key
+name: str
+subject_line: str
+body: str
+template_type: txt | html
+last_updated: DateField
+category?: 
+sub_category?: 
+
+GlobalEmailTemplate
+id: primary key
+company: foreign key
+"""
