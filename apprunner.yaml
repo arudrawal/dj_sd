@@ -4,9 +4,6 @@ build:
   commands:
     build:
       - pip3 install -r deps.txt
-    post-build:
-      - python3 manage.py migrate
-      - python3 data/seed_database.py
 run:
   runtime-version: 3.11.12
   command: sh startup.sh
