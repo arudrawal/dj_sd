@@ -6,7 +6,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
-from .forms import UploadPolicyForm
+from django.template import Template, Context
+from django.utils.safestring import mark_safe
+
+from .forms import UploadPolicyForm, EmailTemplateForm
 from .forms import AgencyForm
 from . import constants
 
@@ -323,8 +326,47 @@ def email_oauth_test(request):
 
 @login_required
 def send_email(request):
+    # get templates from db, default
     context_dict = get_common_context(request, 'Send Email')
-    return render(request, 'sd_main/email/renewal_reminder.html', context_dict)
+    variables = {}
+    variables['first_name'] = "Jane"
+    variables['last_name'] = "Doe"
+    variables['order_id'] = "12345"
+    subject = "This is a Subject"
+    body_string = "Dear {{customer_name}} \n" \
+                  "Policy Type: {{policy_type}} \n\n" \
+                  "Renewal Due Date: {{expiration_date}}" \
+                  "Warm regards,\n{{agent_full_name}}\n{{agent_title}}\n" \
+                  "{{insurance_company_name}}\n" \
+                  "{{contact_information}}"
+    initial_data = {
+        'name': 'Test Template',
+        'subject_line': 'Hello {{ first_name }}!',
+        'body': "<h1>Hi {{ first_name }} {{ last_name }}</h1>\n"
+                "<p>Your order <strong>#{{ order_id }}</strong> has been shipped.</p>"
+    }
+
+    # instance = get_object_or_404(EmailTemplate, id=template_id) if template_id else None
+    # form = EmailTemplateForm(request.POST or None, instance=instance)
+    form = EmailTemplateForm(request.POST or None, initial=initial_data)
+    render_html = ''
+    if form.is_valid():
+        # template_obj = form.save(commit=False)
+        template_string = form.cleaned_data['body']
+        t = Template(template_string)
+        rendered_html = t.render(Context(context_dict))
+    # print(form)
+    context_dict['form'] = form
+    context_dict['rendered_html'] = render_html
+    print("Vars: ", json.dumps(variables))
+    return render(
+        request,
+        'sd_main/email/edit_template.html',
+        {
+            **context_dict,
+            'variables_dict': variables,
+            'variables': mark_safe(json.dumps(variables))
+        })
 
 @login_required
 def vehicles(request):
