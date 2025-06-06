@@ -12,5 +12,7 @@ class EmailTemplateForm(forms.ModelForm):
         model = EmailTemplate
         fields = ['name', 'subject_line', 'body']
         widgets = {
-            'body': forms.Textarea(attrs={'rows': 20, 'cols': 80, 'class': 'form-control'}),
+            'name': forms.Textarea(attrs={'id': 'template_name', 'rows': 1, 'cols': 80, 'class': 'form-control', 'style': 'resize:none;'}),
+            'subject_line': forms.Textarea(attrs={'id': 'template_subject_line', 'rows': 1, 'cols': 80, 'class': 'form-control', 'style': 'resize:none;'}),
+            'body': forms.Textarea(attrs={'id': 'template_body', 'rows': 20, 'cols': 80, 'class': 'form-control'}),
         }

@@ -15,8 +15,7 @@
                     <div class="col">
                         <h4>Live Preview</h4>
                         <h6 style="margin-top:1lh;">Template Name</h6>
-                        <textarea disabled rows="1" id="preview_subject"
-                                  style=""></textarea>
+                        <div id="preview_subject" style=""></div>
 
                         <div id="preview_body" style="margin-top:1lh;"></div>
                     </div>
@@ -31,24 +30,23 @@
                         </div>
                         <form method="POST">
                             {% csrf_token %}
-                            {{ form.name.label_tag }}
-                            <textarea id="template_name" name="name" style="resize:none; margin-bottom:1lh"
-                                      rows="1" class="form-control">{{ form.name.value }}</textarea>
-                            {{ form.subject_line.label_tag }}
-                            <textarea id="template_subject"
-                                      name="subject_line"
-                                      style="resize: none; margin-bottom:1lh;"
-                                      rows="1"
-                                      class="form-control">{{ form.subject_line.value }}</textarea>
-                            {{ form.body.label_tag }}
-                            <table>
-                                <tr>
-                                    <td>
-                                        <textarea id="template_body" name="body" style="min-height: 300px"
-                                                  class="form-control">{{ form.body.value }}</textarea>
-                                    </td>
-                                </tr>
-                            </table>
+<!--                            {{form}}-->
+                            {{ form.name.label_tag }} {{form.name}}
+<!--                            <textarea id="template_name" name="name" style="resize:none; margin-bottom:1lh"-->
+<!--                                      rows="1" class="form-control">{{ form.name.value }}</textarea>-->
+                            {{ form.subject_line.label_tag }} {{form.subject_line}}
+<!--                            <textarea id="template_subject"-->
+<!--                                      name="subject_line"-->
+<!--                                      style="resize: none; margin-bottom:1lh;"-->
+<!--                                      rows="1"-->
+<!--                                      class="form-control">{{ form.subject_line.value }}</textarea>-->
+                            {{ form.body.label_tag }} {{form.body}}
+<!--                            <div id="kt_docs_quill_basic" class="kt_docs_quill_basic">-->
+
+<!--&lt;!&ndash;                                <div id="template_body" name="body" rows="100"&ndash;&gt;-->
+<!--&lt;!&ndash;                                      class="form-control"></div>&ndash;&gt;-->
+<!--                                {{ form.body.value }}-->
+<!--                            </div>-->
                             <button class="btn btn-primary mt-3">Save Template</button>
                         </form>
                     </div>
@@ -58,7 +56,6 @@
     </div>
     <style>
         #preview_subject {
-            background-color: #f8f9fa;
             padding: 1rem;
             border: 1px solid #dee2e6;
             resize: none;
@@ -66,68 +63,45 @@
 
         #preview_body {
             white-space: pre-wrap;
-            background-color: #f8f9fa;
             padding: 1rem;
-            height: 500px;
             border: 1px solid #dee2e6;
         }
 
 
     </style>
     {% load static %}
-    <script src="{% static '/assets/plugins/custom/tinymce/tinymce.bundle.js' %}"></script>
+<!--    <script src="{% static 'assets/plugins/global/plugins.bundle.js' %}"></script>-->
+    <link href="{% static 'assets/plugins/global/plugins.bundle.css' rel='stylesheet' type='text/css' %}"/>
+    <link href="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css'  rel='stylesheet' %}"/>
+    <script src="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js' %}"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const context = JSON.parse('{{ variables|escapejs }}');
             const edit_mode = document.getElementById('edit_mode');
             const editor_container = document.getElementById('editor_container');
 
-            const textarea_subject = document.getElementById('template_subject');
-            const textarea_body = document.getElementById('template_body');
             const preview_subject = document.getElementById('preview_subject');
             const preview_body = document.getElementById('preview_body');
-
-            tinymce.init({
-                selector: '#template_body',
-                // content_css: "{% static '/assets/css/style.bundle.css' %}",
-                context_css: 'writer',
-                // inline: true,
-                toolbar: 'undo redo | styleselect styles | bold italic forecolor | link image emoticons | align | mergetags inserttemplate | spellcheckdialog a11ycheck | removeformat |code markdown',
-                toolbar_sticky: true,
-                menubar: false,
-                visual: false,
-                link_target_list: false,
-                formats: {
-                    h1: {block: 'h1', styles: {fontSize: '24px', color: '#335dff'}},
-                    h2: {block: 'h2', styles: {fontSize: '20px'}},
-                    largetext: {block: 'p', styles: {fontSize: '20px'}},
-                    calltoaction: {selector: 'a',
-                        styles: {
-                            backgroundColor: '#335dff',
-                            padding: '12px 16px',
-                            color: '#ffffff',
-                            borderRadius: '4px',
-                            textDecoration: 'none',
-                            display: 'inline-block'
-                        }
-                    }
-                },
-                style_formats: [
-                    {title: 'Paragraph', format: 'p'},
-                    {title: 'Heading 1', format: 'h1'},
-                    {title: 'Heading 2', format: 'h2'},
-                    {title: 'Large text', format: 'largetext'},
-                    {title: 'Button styles'},
-                    {title: 'Call-to-action', format: 'calltoaction'},
-                ],
-                plugins : "advlist autolink link image lists charmap print preview code markdown importcss",
-
-                setup: function (editor) {
-                    editor.on('keyup change', function () {
-                        preview_body.innerHTML = renderTemplate(editor.getContent(), context);
-                    });
-                }
-            });
+            const textarea_subject = document.getElementById('template_subject_line');
+            const textarea_body = document.getElementById('template_body');
+            //const quill = new Quill('#kt_docs_quill_basic', {
+            //    modules: {
+            //        toolbar: [
+            //            [{
+            //                header: [1, 2, false]
+            //            }],
+            //            ['bold', 'italic', 'underline'],
+            //            ['image', 'code-block']
+            //        ]
+            //    },
+            //    placeholder: 'Type your email here...',
+            //    theme: 'snow' // or 'bubble'
+            //});
+            //quill.on('text-change', () => {
+            //    //textarea_body.innerHTML= quill.root.innerHTML;
+            //    preview_body.innerHTML= renderTemplate(quill.root.innerHTML, context)
+            //});
 
 
             edit_mode.addEventListener('change', function () {
@@ -140,9 +114,9 @@
             textarea_subject.addEventListener('input', () => {
                 preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             });
-            // textarea_body.addEventListener('input', () => {
-            //      preview_body.innerHTML= renderTemplate(textarea_body.value, context);
-            // });
+            textarea_body.addEventListener('input', () => {
+                preview_body.innerHTML= renderTemplate(textarea_body.value, context);
+            });
             // Trigger initial render
             preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             preview_body.innerHTML = renderTemplate(textarea_body.value, context);
