@@ -1,7 +1,7 @@
 import json
 import tempfile
 from io import StringIO
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
@@ -16,8 +16,8 @@ from . import constants
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 
-from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer,\
-                    SystemSetting
+from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer, \
+    SystemSetting, EmailTemplate
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
@@ -206,11 +206,16 @@ def email_oauth(request):
             else:
                 db_gmail = AgencySetting.objects.create(agency=context_dict['agency'],
                                                     name=AgencySetting.AGENCY_OAUTH_EMAIL, text_value=provider_email)
-    context_dict['provider'] = db_gmail_provider.text_value if db_gmail_provider else None
-    context_dict['email'] = db_gmail.text_value if db_gmail else None
-    context_dict['client_id'] = db_gmail_client.json_value if db_gmail_client else None
+    context_dict['provider'] = context_dict['email'] = context_dict['client_id'] = None
+    if db_gmail_provider:
+        context_dict['provider'] = db_gmail_provider.text_value
+    if db_gmail:
+        context_dict['email'] = db_gmail.text_value
+    if db_gmail_client:
+        context_dict['client_id'] = db_gmail_client.json_value
+
+    context_dict['auth_token'] = context_dict['auth_url'] = None
     if db_gmail_provider and db_gmail:
-        context_dict['auth_token'] = None
         db_token = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_TOKEN).first()
         if db_token:
             context_dict['auth_token'] = db_token.json_value
@@ -325,36 +330,42 @@ def email_oauth_test(request):
     return redirect("email_oauth")
 
 @login_required
-def send_email(request):
+def send_email(request, template_id=None):
     # get templates from db, default
     context_dict = get_common_context(request, 'Send Email')
+    templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
+    form = None
+    if template_id:
+        instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], name=template_id)
+        form = EmailTemplateForm(request.POST or None, instance=instance)
+    elif templates and len(templates) > 0:
+        form = EmailTemplateForm(request.POST or None, instance=templates[0])
+    else:
+        form = EmailTemplateForm(request.POST or None, initial={})
+    print("Send email template info: ", template_id, templates)
     variables = {}
-    variables['first_name'] = "Jane"
-    variables['last_name'] = "Doe"
+    if 'agency' in context_dict:
+        agency = context_dict['agency']
+        variables['agent_full_name'] = agency.name
+        variables['contact_email_address'] = agency.contact_email
+        variables['contact_phone_number'] = agency.contact_phone
+        variables['insurance_company_name'] = agency.company.name
+    if 'alert' in context_dict:
+        policy = context_dict['alert'].policy
+        customer = context_dict['alert'].customer
+        variables['policy_number'] = policy.number
+        variables['policy_type'] = policy.lob
+        variables['expiration_date'] = policy.end_date
+        variables['customer_name'] = customer.name
+        variables['customer_email'] = customer.email
+        variables['customer_phone'] = customer.phone
     variables['order_id'] = "12345"
-    subject = "This is a Subject"
-    body_string = "Dear {{customer_name}} \n" \
-                  "Policy Type: {{policy_type}} \n\n" \
-                  "Renewal Due Date: {{expiration_date}}" \
-                  "Warm regards,\n{{agent_full_name}}\n{{agent_title}}\n" \
-                  "{{insurance_company_name}}\n" \
-                  "{{contact_information}}"
-    initial_data = {
-        'name': 'Test Template',
-        'subject_line': 'Hello {{ first_name }}!',
-        'body': "<h1>Hi {{ first_name }} {{ last_name }}</h1>\n"
-                "<p>Your order <strong>#{{ order_id }}</strong> has been shipped.</p>"
-    }
-
-    # instance = get_object_or_404(EmailTemplate, id=template_id) if template_id else None
-    # form = EmailTemplateForm(request.POST or None, instance=instance)
-    form = EmailTemplateForm(request.POST or None, initial=initial_data)
     render_html = ''
-    if form.is_valid():
-        # template_obj = form.save(commit=False)
-        template_string = form.cleaned_data['body']
-        t = Template(template_string)
-        rendered_html = t.render(Context(context_dict))
+    # if form.is_valid():
+    #     # template_obj = form.save(commit=False)
+    #     template_string = form.cleaned_data['body']
+    #     t = Template(template_string)
+    #     rendered_html = t.render(Context(context_dict))
     # print(form)
     context_dict['form'] = form
     context_dict['rendered_html'] = render_html
