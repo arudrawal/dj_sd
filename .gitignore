@@ -175,5 +175,7 @@ cython_debug/
 
 # Files uploaded by app
 media/
+
+.idea
 staticfiles/
 
