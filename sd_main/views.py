@@ -341,7 +341,6 @@ def send_email(request, template_id=None):
         form = EmailTemplateForm(request.POST or None, instance=templates[0])
     else:
         form = EmailTemplateForm(request.POST or None, initial={})
-    print("Send email template info: ", template_id, templates)
     variables = {}
     if 'agency' in context_dict:
         agency = context_dict['agency']
@@ -359,14 +358,23 @@ def send_email(request, template_id=None):
         variables['customer_email'] = customer.email or ""
         variables['customer_phone'] = customer.phone or ""
     context_dict['form'] = form
-    print("Vars: ", json.dumps(variables))
+    template_data = {t.id: {"id": t.id,
+                            "name": t.name,
+                            "subject_line": t.subject_line,
+                            "body": t.body,
+                            "updated_at": t.updated_at.strftime("%Y-%m-%d")}
+                     for t in templates
+                     }
+
     return render(
         request,
         'sd_main/email/edit_template.html',
         {
             **context_dict,
-            'variables_dict': variables,
-            'variables': mark_safe(json.dumps(variables))
+            'variables': variables,
+            'variables_data': mark_safe(json.dumps(variables)),
+            'templates': templates,
+            'templates_data': mark_safe(json.dumps(template_data)),
         })
 
 @login_required
