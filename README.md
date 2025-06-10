@@ -1,5 +1,8 @@
-# dj_sd
-The web application is designed as proof of concept to simplify the routine activities at an insurance agency. For example, renewal remonders, collecting data/images and estbilishing the accuracy of the uploaded data with the help of image scaning and other modern tools.
+## Overview
+The web application is designed as proof of concept to simplify the routine activities at an insurance agency. For example, renewal reminders, collecting data/images and estabilishing the accuracy of the uploaded data with the help of image scaning and other modern tools.
+
+## Get Started
+Quickly get started with local development.
 
 # Environment setup
 ```
