@@ -7,17 +7,17 @@
     <div id="kt_app_content_container" class="app-container container-xxl ">
         <div class="card">
             <div class="card-body">
-                <div class="row">
+                <div class="d-flex flex-row justify-content-between">
+                    <h4 style="margin-right: 10px;">Live Preview</h4>
+                    <div class="form-check form-switch form-check-custom form-check-solid">
+                        <input id="edit_mode" class="form-check-input" type="checkbox" value="">
+                        <label class="form-check-label" for="edit_mode">Edit</label>
+                    </div>
+                </div>
+                <div class="row mt-5">
                     <div id="preview_container" class="col">
-                        <div class="row">
-                            <h4>Live Preview</h4>
-                            <div class="form-check form-switch form-check-custom form-check-solid">
-                                <input id="edit_mode" class="form-check-input" type="checkbox" value="">
-                                <label class="form-check-label" for="edit_mode">Edit</label>
-                            </div>
-                        </div>
                         {% csrf_token %}
-                        <h5 id="preview_name" style="margin-top:1lh;">{{form.name.value}}</h5>
+                        <h5 id="preview_name">{{form.name.value}}</h5>
                         {{ form.subject_line.label_tag }}
                         <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
                         {{ form.body.label_tag }}
@@ -26,32 +26,37 @@
                     </div>
                     <div id="editor_container" class="col" style="display:none;">
                         <h4>Email Template Editor</h4>
-                        <h5>Variables:</h5>
-                        <div>
-
-                            {% for var_name, var_value in variables.items %}
-                            <span class="badge bg-primary">{{var_value}}({{var_name}})</span>
-                            {% endfor %}
-                        </div>
                         <form method="POST">
                             {% csrf_token %}
-                            {{ form.name.label_tag }} {{form.name}}
                             {{ form.subject_line.label_tag }} {{form.subject_line}}
                             {{ form.body.label_tag }} {{form.body}}
-                            <button class="btn btn-primary mt-3">Save Template</button>
+                            <div class="d-flex flex-row justify-content-center">
+                                <button style="margin-right: 10px" class="btn btn-primary mt-3">Save Template</button>
+                                <button class="btn btn-primary mt-3">Save As Copy</button>
+
+                            </div>
                         </form>
                     </div>
                     <div id="template_list" class="col-2" style="display:block">
-                        <h4>Saved Templates</h4>
-                        <ul id="templateList" class="list-group">
-                            {% for t in templates %}
-                            <li class="list-group-item template-link" data-id="{{ t.id }}">
-                                {{ t.name }} <br> Updated: {{t.updated_at}}
-                            </li>
-                            {% empty %}
-                            <li class="list-group-item text-muted">No templates yet</li>
+                        <div class="row">
+
+                            <h4>Saved Templates</h4>
+                            <ul id="templateList" class="list-group">
+                                {% for t in templates %}
+                                <li class="list-group-item template-link" data-id="{{ t.id }}">
+                                    {{ t.name }} <br> Updated: {{t.updated_at}}
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item text-muted">No templates yet</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-5">
+                            <h4>Variables</h4>
+                            {% for var_name, var_value in variables.items %}
+                            <div style="margin-top: 5px;" class="badge bg-primary">{{var_name}}</div>
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -65,6 +70,9 @@
         .template-link:hover {
             text-decoration: underline;
         }
+
+
+
 
 
     </style>
@@ -83,7 +91,6 @@
             const preview_subject = document.getElementById('preview_subject');
             const preview_body = document.getElementById('preview_body');
 
-            const textarea_name = document.getElementById('template_name')
             const textarea_subject = document.getElementById('template_subject_line');
             const textarea_body = document.getElementById('template_body');
 
@@ -110,8 +117,11 @@
 
             function renderTemplate(template, context) {
                 return template.replace(/{{\s*(\w+)\s*}}/g, function (_, key) {
-                    const currentValue = context[key] || '';
-                    return context[key] !== undefined ? context[key] : `<span style="color:red;">{{${key}}}</span>`;
+                    const currentValue = context[key];
+                    if(currentValue===null){
+                        return `<span style="color:red;">Missing: {{${key}}}</span>`
+                    }
+                    return context[key] !== undefined ? context[key] : `<span style="color:red;">Invalid: {{${key}}}</span>`;
                 });
             }
 
@@ -120,7 +130,6 @@
             item.addEventListener('click', function () {
                 const id = this.dataset.id;
                 const selected = templateData[id];
-                textarea_name.value = selected.name;
                 textarea_subject.value = selected.subject_line;
                 textarea_body.value = selected.body;
                 preview_name.innerHTML = selected.name;
@@ -130,6 +139,9 @@
         });
 
         });
+
+
+
 
 
 

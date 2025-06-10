@@ -344,19 +344,19 @@ def send_email(request, template_id=None):
     variables = {}
     if 'agency' in context_dict:
         agency = context_dict['agency']
-        variables['agent_full_name'] = agency.name or ""
-        variables['contact_email_address'] = agency.contact_email or ""
-        variables['contact_phone_number'] = agency.contact_phone or ""
-        variables['insurance_company_name'] = agency.company.name or ""
+        variables['agent_full_name'] = agency.name
+        variables['contact_email_address'] = agency.contact_email
+        variables['contact_phone_number'] = agency.contact_phone
+        variables['insurance_company_name'] = agency.company.name
     if 'alert' in context_dict:
         policy = context_dict['alert'].policy
         customer = context_dict['alert'].customer
-        variables['policy_number'] = policy.number or ""
-        variables['policy_type'] = policy.lob or ""
-        variables['expiration_date'] = policy.end_date or ""
-        variables['customer_name'] = customer.name or ""
-        variables['customer_email'] = customer.email or ""
-        variables['customer_phone'] = customer.phone or ""
+        variables['policy_number'] = policy.number
+        variables['policy_type'] = policy.lob
+        variables['expiration_date'] = policy.end_date
+        variables['customer_name'] = customer.name
+        variables['customer_email'] = customer.email
+        variables['customer_phone'] = customer.phone
     context_dict['form'] = form
     template_data = {t.id: {"id": t.id,
                             "name": t.name,
