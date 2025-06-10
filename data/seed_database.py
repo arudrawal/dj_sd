@@ -99,6 +99,26 @@ AGENCY_USERS = {
     AGENCIES[2]['name']: ['ajay'],
 }
 
+EMAIL_TEMPLATE = {
+    'name': 'Basic Renewal Reminder',
+    'subject_line': 'Reminder: Your Insurance Policy is Due for Renewal',
+    'body': "Dear {{customer_name}} \n"
+            "We hope this message finds you well. This is a friendly reminder that your insurance policy with {{insurance_company_name}}, policy number {{policy_number}}, is set to expire on {{expiration_date}}.\n\n"
+            "To ensure continued coverage without interruption, we recommend renewing your policy before the expiration date. Renewing now will give you peace of mind and avoid any potential gaps in coverage.\n\n"
+            "Policy Details:\n"
+            "Policy Type: {{policy_type}}\n"
+            "Renewal Due Date: {{expiration_date}}\n"
+            "Premium Amount: {{premium_amount}}\n"
+            "Renew Now: {{renewal_link}}\n\n"
+            "If you have any questions about your coverage, or if you’d like to make changes to your policy before renewal, please don’t hesitate to reach out. You can contact us at {{contact_phone_number}} or {{contact_email_address}}.\n\n"
+            "Thank you for choosing {{insurance_company_name}}. We appreciate your continued trust."
+            "Warm regards,\n"
+            "{{agent_full_name}}\n"
+            "{{agent_title}}\n"
+            "{{insurance_company_name}}\n"
+            "{{contact_information}}"
+}
+
 def create_admin_user():
     from django.contrib.auth.models import User
     # Admin user
@@ -208,6 +228,20 @@ def create_agency_settings(db_agencies_by_name):
         if not AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.ALER_CSV_MAP).exists():
             AgencySetting.objects.create(agency=db_agency, name=AgencySetting.ALER_CSV_MAP, json_value=alert_csv_map)
 
+def create_agency_email_template():
+    from sd_main.models import Agency, EmailTemplate
+    for agency_name in AGENCY_USERS.keys():
+        db_agency = Agency.objects.filter(name=agency_name).first()
+        if db_agency:
+            db_email_template = EmailTemplate(
+                agency=db_agency,
+                name=EMAIL_TEMPLATE['name'],
+                subject_line=EMAIL_TEMPLATE['subject_line'],
+                body=EMAIL_TEMPLATE['body']
+            )
+            db_email_template.save()
+            print(f"Saved Email Template to Agency= {agency_name}")
+
 def load_system_settings():
     from sd_main.models import SystemSetting
     db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
@@ -248,6 +282,8 @@ if __name__ == '__main__':
    print (f"Created Agency Settings")
    create_agency_users()
    print (f"Created Agency Users")
+   create_agency_email_template()
+   print(f"Created Agency Email Templates")
    if load_system_settings():
         print (f"Added System Settings Gmail OAUTH client/Redirect URL")
 

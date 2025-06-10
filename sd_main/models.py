@@ -162,3 +162,14 @@ class Vehicle(models.Model):
     license_plate = models.CharField(max_length=50)
     reg_end_date = models.DateField()
     registered_owner = models.CharField(max_length=100)
+
+class EmailTemplate(models.Model):
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    name = models.CharField(max_length=128)
+    subject_line = models.CharField(max_length=50)
+    body = models.TextField()
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
+    category = models.CharField(max_length=100, null=True)
+    sub_category = models.CharField(max_length=100, null=True)
+

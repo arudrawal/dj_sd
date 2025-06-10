@@ -1,0 +1,153 @@
+{% extends "../index.html" %}
+{% block content %}
+<!--begin:: Contents -->
+<div id="kt_app_content" class="app-content  flex-column-fluid ">
+
+    <!--begin::Content container-->
+    <div id="kt_app_content_container" class="app-container container-xxl ">
+        <div class="card">
+            <div class="card-body">
+                <div class="custom-control custom-switch">
+                    <input id="edit_mode" type="checkbox" class="custom-control-input">
+                    <label class="custom-control-label" for="edit_mode">Edit</label>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <h4>Live Preview</h4>
+                        <h6 style="margin-top:1lh;">Template Name</h6>
+                        <div id="preview_subject" style=""></div>
+
+                        <div id="preview_body" style="margin-top:1lh;"></div>
+                    </div>
+                    <div id="editor_container" class="col" style="display:block;">
+                        <h4>Email Template Editor</h4>
+                        <h5>Variables:</h5>
+                        <div>
+
+                            {% for var_name, var_value in variables_dict.items %}
+                            <span class="badge bg-primary">{{var_value}}({{var_name}})</span>
+                            {% endfor %}
+                        </div>
+                        <form method="POST">
+                            {% csrf_token %}
+<!--                            {{form}}-->
+                            {{ form.name.label_tag }} {{form.name}}
+<!--                            <textarea id="template_name" name="name" style="resize:none; margin-bottom:1lh"-->
+<!--                                      rows="1" class="form-control">{{ form.name.value }}</textarea>-->
+                            {{ form.subject_line.label_tag }} {{form.subject_line}}
+<!--                            <textarea id="template_subject"-->
+<!--                                      name="subject_line"-->
+<!--                                      style="resize: none; margin-bottom:1lh;"-->
+<!--                                      rows="1"-->
+<!--                                      class="form-control">{{ form.subject_line.value }}</textarea>-->
+                            {{ form.body.label_tag }} {{form.body}}
+<!--                            <div id="kt_docs_quill_basic" class="kt_docs_quill_basic">-->
+
+<!--&lt;!&ndash;                                <div id="template_body" name="body" rows="100"&ndash;&gt;-->
+<!--&lt;!&ndash;                                      class="form-control"></div>&ndash;&gt;-->
+<!--                                {{ form.body.value }}-->
+<!--                            </div>-->
+                            <button class="btn btn-primary mt-3">Save Template</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        #preview_subject {
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+            resize: none;
+        }
+
+        #preview_body {
+            white-space: pre-wrap;
+            padding: 1rem;
+            border: 1px solid #dee2e6;
+        }
+
+
+    </style>
+    {% load static %}
+<!--    <script src="{% static 'assets/plugins/global/plugins.bundle.js' %}"></script>-->
+    <link href="{% static 'assets/plugins/global/plugins.bundle.css' rel='stylesheet' type='text/css' %}"/>
+    <link href="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css'  rel='stylesheet' %}"/>
+    <script src="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const context = JSON.parse('{{ variables|escapejs }}');
+            const edit_mode = document.getElementById('edit_mode');
+            const editor_container = document.getElementById('editor_container');
+
+            const preview_subject = document.getElementById('preview_subject');
+            const preview_body = document.getElementById('preview_body');
+            const textarea_subject = document.getElementById('template_subject_line');
+            const textarea_body = document.getElementById('template_body');
+            //const quill = new Quill('#kt_docs_quill_basic', {
+            //    modules: {
+            //        toolbar: [
+            //            [{
+            //                header: [1, 2, false]
+            //            }],
+            //            ['bold', 'italic', 'underline'],
+            //            ['image', 'code-block']
+            //        ]
+            //    },
+            //    placeholder: 'Type your email here...',
+            //    theme: 'snow' // or 'bubble'
+            //});
+            //quill.on('text-change', () => {
+            //    //textarea_body.innerHTML= quill.root.innerHTML;
+            //    preview_body.innerHTML= renderTemplate(quill.root.innerHTML, context)
+            //});
+
+
+            edit_mode.addEventListener('change', function () {
+                if (this.checked) {
+                    editor_container.style.display = 'block';
+                } else {
+                    editor_container.style.display = 'none';
+                }
+            });
+            textarea_subject.addEventListener('input', () => {
+                preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+            });
+            textarea_body.addEventListener('input', () => {
+                preview_body.innerHTML= renderTemplate(textarea_body.value, context);
+            });
+            // Trigger initial render
+            preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+            preview_body.innerHTML = renderTemplate(textarea_body.value, context);
+
+
+            {% verbatim %}
+
+            function renderTemplate(template, context) {
+                return template.replace(/{{\s*(\w+)\s*}}/g, function (_, key) {
+                    const currentValue = context[key] || '';
+                    return context[key] !== undefined ? context[key] : `<span style="color:red;">{{${key}}}</span>`;
+                });
+            }
+
+            {% endverbatim %}
+
+            // function renderDropdown(key, currentValue) {
+            //     return `
+            //         <select class="form-select form-select-sm d-inline variable-input" data-key="${key}" style="width:auto; display:inline-block;">
+            //             ${Object.entries(context).map(([k, v]) => {
+            //         const selected = k === key || v === currentValue ? 'selected' : '';
+            //         return `<option value="${v}" ${selected}>${v}</option>`;
+            //     }).join('')}
+            //         </select>
+            //     `;
+            // }
+
+        });
+
+
+    </script>
+
+</div>
+{% endblock %}
