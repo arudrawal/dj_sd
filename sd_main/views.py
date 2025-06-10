@@ -334,7 +334,6 @@ def send_email(request, template_id=None):
     # get templates from db, default
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
-    form = None
     if template_id:
         instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], name=template_id)
         form = EmailTemplateForm(request.POST or None, instance=instance)
@@ -346,29 +345,20 @@ def send_email(request, template_id=None):
     variables = {}
     if 'agency' in context_dict:
         agency = context_dict['agency']
-        variables['agent_full_name'] = agency.name
-        variables['contact_email_address'] = agency.contact_email
-        variables['contact_phone_number'] = agency.contact_phone
-        variables['insurance_company_name'] = agency.company.name
+        variables['agent_full_name'] = agency.name or ""
+        variables['contact_email_address'] = agency.contact_email or ""
+        variables['contact_phone_number'] = agency.contact_phone or ""
+        variables['insurance_company_name'] = agency.company.name or ""
     if 'alert' in context_dict:
         policy = context_dict['alert'].policy
         customer = context_dict['alert'].customer
-        variables['policy_number'] = policy.number
-        variables['policy_type'] = policy.lob
-        variables['expiration_date'] = policy.end_date
-        variables['customer_name'] = customer.name
-        variables['customer_email'] = customer.email
-        variables['customer_phone'] = customer.phone
-    variables['order_id'] = "12345"
-    render_html = ''
-    # if form.is_valid():
-    #     # template_obj = form.save(commit=False)
-    #     template_string = form.cleaned_data['body']
-    #     t = Template(template_string)
-    #     rendered_html = t.render(Context(context_dict))
-    # print(form)
+        variables['policy_number'] = policy.number or ""
+        variables['policy_type'] = policy.lob or ""
+        variables['expiration_date'] = policy.end_date or ""
+        variables['customer_name'] = customer.name or ""
+        variables['customer_email'] = customer.email or ""
+        variables['customer_phone'] = customer.phone or ""
     context_dict['form'] = form
-    context_dict['rendered_html'] = render_html
     print("Vars: ", json.dumps(variables))
     return render(
         request,
