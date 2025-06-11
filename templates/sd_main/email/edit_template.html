@@ -7,17 +7,23 @@
     <div id="kt_app_content_container" class="app-container container-xxl ">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex flex-row justify-content-between">
-                    <h4 style="margin-right: 10px;">Live Preview</h4>
+                <div class="d-flex flex-row">
+                    <h4 class="col">Email Template</h4>
                     <div class="form-check form-switch form-check-custom form-check-solid">
                         <input id="edit_mode" class="form-check-input" type="checkbox" value="">
                         <label class="form-check-label" for="edit_mode">Edit</label>
                     </div>
+                    <div class="col-2"></div>
+                </div>
+                <div style="width: fit-content;">
+                    {% csrf_token %}
+                    {{ form.name.label_tag }}
+                    <input name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
                 </div>
                 <div class="row mt-5">
                     <div id="preview_container" class="col">
+                        <h4>Preview</h4>
                         {% csrf_token %}
-                        <h5 id="preview_name">{{form.name.value}}</h5>
                         {{ form.subject_line.label_tag }}
                         <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
                         {{ form.body.label_tag }}
@@ -25,17 +31,25 @@
                              style="white-space: pre-wrap;padding: 1rem;border: 1px solid #dee2e6; min-height:300px"></div>
                     </div>
                     <div id="editor_container" class="col" style="display:none;">
-                        <h4>Email Template Editor</h4>
-                        <form method="POST">
+                        <h4>Editor</h4>
+                        <form id="emailTemplateForm" method="POST">
                             {% csrf_token %}
+                            <input type="hidden" name="template_id" id="template_id" form="emailTemplateForm" value="{{template_id}}">
+                            {{ form.name }}
                             {{ form.subject_line.label_tag }} {{form.subject_line}}
                             {{ form.body.label_tag }} {{form.body}}
-                            <div class="d-flex flex-row justify-content-center">
-                                <button style="margin-right: 10px" class="btn btn-primary mt-3">Save Template</button>
-                                <button class="btn btn-primary mt-3">Save As Copy</button>
-
-                            </div>
+                            <button type="button"
+                                    style="margin-right: 10px"
+                                    class="btn btn-primary mt-3"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#saveOverrideModal"
+                                    >Update Template</button>
+                            <button type="button"    
+                                    class="btn btn-primary mt-3"
+                                    >Save As New</button>
                         </form>
+                        <div class="d-flex flex-row justify-content-center">
+                        </div>
                     </div>
                     <div id="template_list" class="col-2" style="display:block">
                         <div class="row">
@@ -61,8 +75,28 @@
                 </div>
             </div>
         </div>
-    </div>
+        <div class="modal fade" id="saveOverrideModal" tabindex="-1" aria-labelledby="saveOverrideModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Save Changes</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <span>Do you want to override this template</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="action" value="update" class="btn btn-primary" form="emailTemplateForm">Save</button>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>        
     <style>
+        #template_name {
+            display: none;
+        }
         .template-link {
             cursor: pointer;
             color: #007bff;
@@ -71,26 +105,26 @@
             text-decoration: underline;
         }
 
-
-
-
-
     </style>
     {% load static %}
     <link href="{% static 'assets/plugins/global/plugins.bundle.css' rel='stylesheet' type='text/css' %}"/>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            
+            
             const context = JSON.parse('{{ variables_data|escapejs }}');
             const templateData = JSON.parse('{{ templates_data|escapejs }}');
 
             const edit_mode = document.getElementById('edit_mode');
             const editor_container = document.getElementById('editor_container');
 
-            const preview_name = document.getElementById('preview_name');
             const preview_subject = document.getElementById('preview_subject');
             const preview_body = document.getElementById('preview_body');
-
+            
+            const template_id = document.getElementById('template_id'); 
+            const input_name = document.getElementById('template_name_input');
+            const textarea_name = document.getElementById('template_name');
             const textarea_subject = document.getElementById('template_subject_line');
             const textarea_body = document.getElementById('template_body');
 
@@ -101,6 +135,11 @@
                     editor_container.style.display = 'none';
                 }
             });
+
+            input_name.addEventListener('input', () => {
+                textarea_name.value = input_name.value;
+            });
+
             textarea_subject.addEventListener('input', () => {
                 preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             });
@@ -112,7 +151,22 @@
             preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             preview_body.innerHTML = renderTemplate(textarea_body.value, context);
 
+            document.querySelectorAll('.template-link').forEach(item => {
+                item.addEventListener('click', function () {
+                    const id = this.dataset.id;
+                    const selected = templateData[id];
+                    console.log("Load template: ", selected);
+                    template_id.value = selected.id;
 
+                    textarea_name.value = selected.name;
+                    textarea_subject.value = selected.subject_line;
+                    textarea_body.value = selected.body;
+                    
+                    input_name.value = selected.name;
+                    preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+                    preview_body.innerHTML = renderTemplate(textarea_body.value, context);
+                });
+            });
             {% verbatim %}
 
             function renderTemplate(template, context) {
@@ -126,32 +180,9 @@
             }
 
             {% endverbatim %}
-            document.querySelectorAll('.template-link').forEach(item => {
-            item.addEventListener('click', function () {
-                const id = this.dataset.id;
-                const selected = templateData[id];
-                textarea_subject.value = selected.subject_line;
-                textarea_body.value = selected.body;
-                preview_name.innerHTML = selected.name;
-                preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
-                preview_body.innerHTML = renderTemplate(textarea_body.value, context);
-            });
-        });
+            
 
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
     </script>
 </div>
 {% endblock %}

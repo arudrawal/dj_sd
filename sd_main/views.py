@@ -331,14 +331,32 @@ def email_oauth_test(request):
 
 @login_required
 def send_email(request, template_id=None):
-    # get templates from db, default
+    #TODO Save email feature
+    #TODO Save as New Email feature
+    #TODO Send Email feature
+    if request.method == "POST":
+        action = request.POST.get("action")
+        template_id = request.POST.get("template_id")
+        name = request.POST.get("name")
+        subject = request.POST.get("subject_line")
+        print(action, template_id, name, subject);
+        if action == "update" and template_id:
+            instance = get_object_or_404(EmailTemplate, id=template_id)
+            form = EmailTemplateForm(request.POST, instance=instance)
+            if form.is_valid():
+                form.save()
+                print('form saved')
+                return redirect(request.path_info) # Redirect to clean form
+            else:
+                print(form.errors)
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
     if template_id:
-        instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], name=template_id)
+        instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
         form = EmailTemplateForm(request.POST or None, instance=instance)
     elif templates and len(templates) > 0:
         form = EmailTemplateForm(request.POST or None, instance=templates[0])
+        template_id = templates[0].id
     else:
         form = EmailTemplateForm(request.POST or None, initial={})
     variables = {}
@@ -365,14 +383,15 @@ def send_email(request, template_id=None):
                             "updated_at": t.updated_at.strftime("%Y-%m-%d")}
                      for t in templates
                      }
-
     return render(
         request,
         'sd_main/email/edit_template.html',
         {
             **context_dict,
+
             'variables': variables,
             'variables_data': mark_safe(json.dumps(variables)),
+            'template_id': template_id,
             'templates': templates,
             'templates_data': mark_safe(json.dumps(template_data)),
         })
