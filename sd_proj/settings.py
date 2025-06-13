@@ -127,16 +127,16 @@ if "DATABASE_SECRET" in environ:
             }
         }
 else:
-    DATABASES = {
+    DATABASES = { # remove .env file to use sqlite3
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': f"django.db.backends.{os.getenv('DATABASE_ENGINE', 'sqlite3')}",
+            'NAME': os.getenv('DATABASE_NAME', BASE_DIR / 'db.sqlite3'),
             #'ENGINE': 'django.db.backends.postgresql',
-            #'HOST': '127.0.0.1',
-            #'PORT': '5432',
+            'HOST': os.getenv('DATABASE_HOST','127.0.0.1'),
+            'PORT': os.getenv('DATABASE_PORT','5432'),
             #'NAME': 'local_sd',
-            #'USER': 'test',
-            #'PASSWORD': 'test'
+            'USER': os.getenv('DATABASE_USER','test'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD','test'),
         }
     }
 

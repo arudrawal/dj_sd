@@ -166,7 +166,7 @@ class Vehicle(models.Model):
 class EmailTemplate(models.Model):
     agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
     name = models.CharField(max_length=128)
-    subject_line = models.CharField(max_length=50)
+    subject_line = models.CharField(max_length=128)
     body = models.TextField()
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
