@@ -32,8 +32,16 @@ Quickly get started with local development.
 - python3 data/seed_databse.py
 ```
 ### PostgreSQL - start fresh
+#### Assuming PostgresSql is installed on the system
 - source data/create_database.sh
 - rm sd_main/migrations/0001_initial.py
 - python3 manage.py makemigrations
 - python3 manage.py migrate
 - python3 data/seed_databse.py
+
+### Run Dockerized application with Postgres
+    Assuming PostgresSql is installed on the system
+- source data/create_database.sh # create empty database
+- docker compose up --build      # Build docker image
+- docker compose run web python3 manage.py migrate # Create database
+- docker compose run web python3 data/seed_databse.py # Seed test data
