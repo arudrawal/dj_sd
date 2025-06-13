@@ -337,16 +337,29 @@ def send_email(request, template_id=None):
     if request.method == "POST":
         action = request.POST.get("action")
         template_id = request.POST.get("template_id")
-        name = request.POST.get("name")
-        subject = request.POST.get("subject_line")
-        print(action, template_id, name, subject);
+        print(f'Email Template: {action}')
         if action == "update" and template_id:
             instance = get_object_or_404(EmailTemplate, id=template_id)
             form = EmailTemplateForm(request.POST, instance=instance)
             if form.is_valid():
                 form.save()
-                print('form saved')
-                return redirect(request.path_info) # Redirect to clean form
+                print('template saved')
+                return redirect(f'/send_email/{template_id}')
+            else:
+                print(form.errors)
+        if action == 'create':
+            form = EmailTemplateForm(request.POST)
+            if form.is_valid():
+                context = get_common_context(request, 'Send Email')
+                email_template = EmailTemplate(
+                    agency=context['agency'],
+                    name=form.cleaned_data['name'],
+                    subject_line=form.cleaned_data['subject_line'],
+                    body=form.cleaned_data['body'])
+                email_template.save()
+                template_id = email_template.id
+                print("new template created")
+                return redirect(f'/send_email/{template_id}')
             else:
                 print(form.errors)
     context_dict = get_common_context(request, 'Send Email')
