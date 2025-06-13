@@ -18,7 +18,7 @@
                 <div style="width: fit-content;">
                     {% csrf_token %}
                     {{ form.name.label_tag }}
-                    <input name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
+                    <input readonly required name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
                 </div>
                 <div class="row mt-5">
                     <div id="preview_container" class="col">
@@ -44,7 +44,9 @@
                                     data-bs-toggle="modal" 
                                     data-bs-target="#saveOverrideModal"
                                     >Update Template</button>
-                            <button type="button"    
+                            <button type="submit"
+                                    name="action"
+                                    value="create"
                                     class="btn btn-primary mt-3"
                                     >Save As New</button>
                         </form>
@@ -131,8 +133,10 @@
             edit_mode.addEventListener('change', function () {
                 if (this.checked) {
                     editor_container.style.display = 'block';
+                    input_name.removeAttribute('readonly')
                 } else {
                     editor_container.style.display = 'none';
+                    input_name.setAttribute('readonly', "")
                 }
             });
 

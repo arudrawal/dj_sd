@@ -17,6 +17,7 @@ urlpatterns = [
     path("gmail_oauth_callback/", views.gmail_oauth_callback, name="gmail_oauth_callback"),
     path("drivers/", views.drivers, name="drivers"),
     path("send_email/", views.send_email, name="send_email"),
+    path("send_email/<int:template_id>", views.send_email, name="send_email_id"),
     path("drivers/", views.drivers, name="drivers"),
     path("upload_policy/", views.upload_policy, name="upload_policy"),
 ]
