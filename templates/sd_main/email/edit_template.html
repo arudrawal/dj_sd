@@ -7,147 +7,187 @@
     <div id="kt_app_content_container" class="app-container container-xxl ">
         <div class="card">
             <div class="card-body">
-                <div class="custom-control custom-switch">
-                    <input id="edit_mode" type="checkbox" class="custom-control-input">
-                    <label class="custom-control-label" for="edit_mode">Edit</label>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <h4>Live Preview</h4>
-                        <h6 style="margin-top:1lh;">Template Name</h6>
-                        <div id="preview_subject" style=""></div>
-
-                        <div id="preview_body" style="margin-top:1lh;"></div>
+                <div class="d-flex flex-row">
+                    <h4 class="col">Email Template</h4>
+                    <div class="form-check form-switch form-check-custom form-check-solid">
+                        <input id="edit_mode" class="form-check-input" type="checkbox" value="">
+                        <label class="form-check-label" for="edit_mode">Edit</label>
                     </div>
-                    <div id="editor_container" class="col" style="display:block;">
-                        <h4>Email Template Editor</h4>
-                        <h5>Variables:</h5>
-                        <div>
+                    <div class="col-2"></div>
+                </div>
+                <div style="width: fit-content;">
+                    {% csrf_token %}
+                    {{ form.name.label_tag }}
+                    <input readonly required name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
+                </div>
+                <div class="row mt-5">
+                    <div id="preview_container" class="col">
+                        <h4>Preview</h4>
+                        {% csrf_token %}
+                        {{ form.subject_line.label_tag }}
+                        <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
+                        {{ form.body.label_tag }}
+                        <div id="preview_body"
+                             style="white-space: pre-wrap;padding: 1rem;border: 1px solid #dee2e6; min-height:300px"></div>
+                        <button type="submit" value="send" class="btn btn-primary mt-3">Send Email</button>
+                    </div>
+                    <div id="editor_container" class="col" style="display:none;">
+                        <h4>Editor</h4>
+                        <form id="emailTemplateForm" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="template_id" id="template_id" form="emailTemplateForm" value="{{template_id}}">
+                            {{ form.name }}
+                            {{ form.subject_line.label_tag }} {{form.subject_line}}
+                            {{ form.body.label_tag }} {{form.body}}
+                            <button type="button"
+                                    style="margin-right: 10px"
+                                    class="btn btn-primary mt-3"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#saveOverrideModal"
+                                    >Update Template</button>
+                            <button type="submit"
+                                    name="action"
+                                    value="create"
+                                    class="btn btn-primary mt-3"
+                                    >Save As New</button>
+                        </form>
+                        <div class="d-flex flex-row justify-content-center">
+                        </div>
+                    </div>
+                    <div id="template_list" class="col-2" style="display:block">
+                        <div class="row">
 
-                            {% for var_name, var_value in variables_dict.items %}
-                            <span class="badge bg-primary">{{var_value}}({{var_name}})</span>
+                            <h4>Saved Templates</h4>
+                            <ul id="templateList" class="list-group">
+                                {% for t in templates %}
+                                <li class="list-group-item template-link" data-id="{{ t.id }}">
+                                    {{ t.name }} <br> Updated: {{t.updated_at}}
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item text-muted">No templates yet</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-5">
+                            <h4>Variables</h4>
+                            {% for var_name, var_value in variables.items %}
+                            <div style="margin-top: 5px;" class="badge bg-primary">{{var_name}}</div>
                             {% endfor %}
                         </div>
-                        <form method="POST">
-                            {% csrf_token %}
-<!--                            {{form}}-->
-                            {{ form.name.label_tag }} {{form.name}}
-<!--                            <textarea id="template_name" name="name" style="resize:none; margin-bottom:1lh"-->
-<!--                                      rows="1" class="form-control">{{ form.name.value }}</textarea>-->
-                            {{ form.subject_line.label_tag }} {{form.subject_line}}
-<!--                            <textarea id="template_subject"-->
-<!--                                      name="subject_line"-->
-<!--                                      style="resize: none; margin-bottom:1lh;"-->
-<!--                                      rows="1"-->
-<!--                                      class="form-control">{{ form.subject_line.value }}</textarea>-->
-                            {{ form.body.label_tag }} {{form.body}}
-<!--                            <div id="kt_docs_quill_basic" class="kt_docs_quill_basic">-->
-
-<!--&lt;!&ndash;                                <div id="template_body" name="body" rows="100"&ndash;&gt;-->
-<!--&lt;!&ndash;                                      class="form-control"></div>&ndash;&gt;-->
-<!--                                {{ form.body.value }}-->
-<!--                            </div>-->
-                            <button class="btn btn-primary mt-3">Save Template</button>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="modal fade" id="saveOverrideModal" tabindex="-1" aria-labelledby="saveOverrideModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Save Changes</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <span>Do you want to override this template</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="action" value="update" class="btn btn-primary" form="emailTemplateForm">Save</button>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>        
     <style>
-        #preview_subject {
-            padding: 1rem;
-            border: 1px solid #dee2e6;
-            resize: none;
+        #template_name {
+            display: none;
         }
-
-        #preview_body {
-            white-space: pre-wrap;
-            padding: 1rem;
-            border: 1px solid #dee2e6;
+        .template-link {
+            cursor: pointer;
+            color: #007bff;
         }
-
+        .template-link:hover {
+            text-decoration: underline;
+        }
 
     </style>
     {% load static %}
-<!--    <script src="{% static 'assets/plugins/global/plugins.bundle.js' %}"></script>-->
     <link href="{% static 'assets/plugins/global/plugins.bundle.css' rel='stylesheet' type='text/css' %}"/>
-    <link href="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css'  rel='stylesheet' %}"/>
-    <script src="{% static 'https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js' %}"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const context = JSON.parse('{{ variables|escapejs }}');
+            
+            
+            const context = JSON.parse('{{ variables_data|escapejs }}');
+            const templateData = JSON.parse('{{ templates_data|escapejs }}');
+
             const edit_mode = document.getElementById('edit_mode');
             const editor_container = document.getElementById('editor_container');
 
             const preview_subject = document.getElementById('preview_subject');
             const preview_body = document.getElementById('preview_body');
+            
+            const template_id = document.getElementById('template_id'); 
+            const input_name = document.getElementById('template_name_input');
+            const textarea_name = document.getElementById('template_name');
             const textarea_subject = document.getElementById('template_subject_line');
             const textarea_body = document.getElementById('template_body');
-            //const quill = new Quill('#kt_docs_quill_basic', {
-            //    modules: {
-            //        toolbar: [
-            //            [{
-            //                header: [1, 2, false]
-            //            }],
-            //            ['bold', 'italic', 'underline'],
-            //            ['image', 'code-block']
-            //        ]
-            //    },
-            //    placeholder: 'Type your email here...',
-            //    theme: 'snow' // or 'bubble'
-            //});
-            //quill.on('text-change', () => {
-            //    //textarea_body.innerHTML= quill.root.innerHTML;
-            //    preview_body.innerHTML= renderTemplate(quill.root.innerHTML, context)
-            //});
-
 
             edit_mode.addEventListener('change', function () {
                 if (this.checked) {
                     editor_container.style.display = 'block';
+                    input_name.removeAttribute('readonly')
                 } else {
                     editor_container.style.display = 'none';
+                    input_name.setAttribute('readonly', "")
                 }
             });
+
+            input_name.addEventListener('input', () => {
+                textarea_name.value = input_name.value;
+            });
+
             textarea_subject.addEventListener('input', () => {
                 preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             });
             textarea_body.addEventListener('input', () => {
                 preview_body.innerHTML= renderTemplate(textarea_body.value, context);
             });
+
             // Trigger initial render
             preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
             preview_body.innerHTML = renderTemplate(textarea_body.value, context);
 
+            document.querySelectorAll('.template-link').forEach(item => {
+                item.addEventListener('click', function () {
+                    const id = this.dataset.id;
+                    const selected = templateData[id];
+                    console.log("Load template: ", selected);
+                    template_id.value = selected.id;
 
+                    textarea_name.value = selected.name;
+                    textarea_subject.value = selected.subject_line;
+                    textarea_body.value = selected.body;
+                    
+                    input_name.value = selected.name;
+                    preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+                    preview_body.innerHTML = renderTemplate(textarea_body.value, context);
+                });
+            });
             {% verbatim %}
 
             function renderTemplate(template, context) {
                 return template.replace(/{{\s*(\w+)\s*}}/g, function (_, key) {
-                    const currentValue = context[key] || '';
-                    return context[key] !== undefined ? context[key] : `<span style="color:red;">{{${key}}}</span>`;
+                    const currentValue = context[key];
+                    if(currentValue===null){
+                        return `<span style="color:red;">Missing: {{${key}}}</span>`
+                    }
+                    return context[key] !== undefined ? context[key] : `<span style="color:red;">Invalid: {{${key}}}</span>`;
                 });
             }
 
             {% endverbatim %}
-
-            // function renderDropdown(key, currentValue) {
-            //     return `
-            //         <select class="form-select form-select-sm d-inline variable-input" data-key="${key}" style="width:auto; display:inline-block;">
-            //             ${Object.entries(context).map(([k, v]) => {
-            //         const selected = k === key || v === currentValue ? 'selected' : '';
-            //         return `<option value="${v}" ${selected}>${v}</option>`;
-            //     }).join('')}
-            //         </select>
-            //     `;
-            // }
+            
 
         });
-
-
     </script>
-
 </div>
 {% endblock %}

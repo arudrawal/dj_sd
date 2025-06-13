@@ -331,18 +331,47 @@ def email_oauth_test(request):
 
 @login_required
 def send_email(request, template_id=None):
-    # get templates from db, default
+    #TODO Save email feature
+    #TODO Save as New Email feature
+    #TODO Send Email feature
+    if request.method == "POST":
+        action = request.POST.get("action")
+        template_id = request.POST.get("template_id")
+        print(f'Email Template: {action}')
+        if action == "update" and template_id:
+            instance = get_object_or_404(EmailTemplate, id=template_id)
+            form = EmailTemplateForm(request.POST, instance=instance)
+            if form.is_valid():
+                form.save()
+                print('template saved')
+                return redirect(f'/send_email/{template_id}')
+            else:
+                print(form.errors)
+        if action == 'create':
+            form = EmailTemplateForm(request.POST)
+            if form.is_valid():
+                context = get_common_context(request, 'Send Email')
+                email_template = EmailTemplate(
+                    agency=context['agency'],
+                    name=form.cleaned_data['name'],
+                    subject_line=form.cleaned_data['subject_line'],
+                    body=form.cleaned_data['body'])
+                email_template.save()
+                template_id = email_template.id
+                print("new template created")
+                return redirect(f'/send_email/{template_id}')
+            else:
+                print(form.errors)
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
-    form = None
     if template_id:
-        instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], name=template_id)
+        instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
         form = EmailTemplateForm(request.POST or None, instance=instance)
     elif templates and len(templates) > 0:
         form = EmailTemplateForm(request.POST or None, instance=templates[0])
+        template_id = templates[0].id
     else:
         form = EmailTemplateForm(request.POST or None, initial={})
-    print("Send email template info: ", template_id, templates)
     variables = {}
     if 'agency' in context_dict:
         agency = context_dict['agency']
@@ -359,24 +388,25 @@ def send_email(request, template_id=None):
         variables['customer_name'] = customer.name
         variables['customer_email'] = customer.email
         variables['customer_phone'] = customer.phone
-    variables['order_id'] = "12345"
-    render_html = ''
-    # if form.is_valid():
-    #     # template_obj = form.save(commit=False)
-    #     template_string = form.cleaned_data['body']
-    #     t = Template(template_string)
-    #     rendered_html = t.render(Context(context_dict))
-    # print(form)
     context_dict['form'] = form
-    context_dict['rendered_html'] = render_html
-    print("Vars: ", json.dumps(variables))
+    template_data = {t.id: {"id": t.id,
+                            "name": t.name,
+                            "subject_line": t.subject_line,
+                            "body": t.body,
+                            "updated_at": t.updated_at.strftime("%Y-%m-%d")}
+                     for t in templates
+                     }
     return render(
         request,
         'sd_main/email/edit_template.html',
         {
             **context_dict,
-            'variables_dict': variables,
-            'variables': mark_safe(json.dumps(variables))
+
+            'variables': variables,
+            'variables_data': mark_safe(json.dumps(variables)),
+            'template_id': template_id,
+            'templates': templates,
+            'templates_data': mark_safe(json.dumps(template_data)),
         })
 
 @login_required

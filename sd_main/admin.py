@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Company, Customer, Agency, AgencySetting, AgencyUser, PolicyAlert
-from .models import Driver, Vehicle, Policy, PolicyDocument, SystemSetting
+from .models import Driver, Vehicle, Policy, PolicyDocument, SystemSetting, EmailTemplate
 
 # Register your models here.
 # admin.site.register(Policy)
@@ -56,3 +56,4 @@ admin.site.register(PolicyAlert, PolicyAlertAdmin)
 admin.site.register(Driver)
 admin.site.register(Vehicle)
 admin.site.register(PolicyDocument)
+admin.site.register(EmailTemplate)
