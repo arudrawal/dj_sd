@@ -62,7 +62,7 @@ ALLOWED_HOSTS = [".awsapprunner.com", "*"]
 # This tells Django to check the HTTP_X_FORWARDED_PROTO header. 
 # If its value is https, the request is treated as secure.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = ['.awsapprunner.com']
+# CSRF_TRUSTED_ORIGINS = ['.awsapprunner.com']
 
 # Application definition
 
@@ -190,7 +190,8 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
