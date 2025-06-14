@@ -1,5 +1,53 @@
 # Artifacts to exclude when sending build context to the docker daemon
 
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
 # Dotfiles, cache, build artifacts, test, etc.
 .coverage
 .coveragerc
@@ -29,3 +77,19 @@ deployment/**/*
 # IDE stuff
 .idea/
 .vscode/
+
+# Django static files
+*staticfiles/
+*mediafiles/
+
+# Environments
+env.postgres
+env.sqlite
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+

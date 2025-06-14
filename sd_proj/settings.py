@@ -59,7 +59,10 @@ SECRET_KEY = 'django-insecure-*y$2t6sd-pw4@gr)y+*fp3p9k3hrg0wvp0o9mj8aqp@rkq_6hl
 DEBUG = True
 
 ALLOWED_HOSTS = [".awsapprunner.com", "*"]
-
+# This tells Django to check the HTTP_X_FORWARDED_PROTO header. 
+# If its value is https, the request is treated as secure.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# CSRF_TRUSTED_ORIGINS = ['.awsapprunner.com']
 
 # Application definition
 
@@ -187,7 +190,8 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
