@@ -45,3 +45,10 @@ Quickly get started with local development.
 - docker compose up --build      # Build docker image
 - docker compose run web python3 manage.py migrate # Create database
 - docker compose run web python3 data/seed_databse.py # Seed test data
+
+### Push docker image to AWS
+- docker compose up --build
+- docker tag dj_sd-web:latest 198752717356.dkr.ecr.us-west-2.amazonaws.com/shivark/dj_sd:latest
+- aws ecr get-login-password --region us-west-2 --profile shivark | docker login --username AWS
+--password-stdin 198752717356.dkr.ecr.us-west-2.amazonaws.com
+- docker push 198752717356.dkr.ecr.us-west-2.amazonaws.com/shivark/dj_sd:latest
