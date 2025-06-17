@@ -15,27 +15,37 @@
                     </div>
                     <div class="col-2"></div>
                 </div>
+                {# comment #}
                 <div style="width: fit-content;">
-                    {% csrf_token %}
                     {{ form.name.label_tag }}
-                    <input readonly required name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
+                    <input readonly name="preview_template_name" id="preview_template_name" type="text" size="70" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
                 </div>
+                {# endcomment #}
                 <div class="row mt-5">
                     <div id="preview_container" class="col">
                         <h4>Preview</h4>
-                        {% csrf_token %}
-                        {{ form.subject_line.label_tag }}
-                        <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
-                        {{ form.body.label_tag }}
-                        <div id="preview_body"
-                             style="white-space: pre-wrap;padding: 1rem;border: 1px solid #dee2e6; min-height:300px"></div>
-                        <button type="submit" value="send" class="btn btn-primary mt-3">Send Email</button>
+                        <form id="emailForm" method="POST">
+                            {% csrf_token %}
+                            <label for="mail_to">Mail To:</label>
+                            <input required name="mail_to" id="mail_to" type="text" class="form-control" placeholder="customer@mail.com" value="" />
+                            {{ form.subject_line.label_tag }}
+                            <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
+                            <input type="hidden" name="mail_subject" id="mail_subject" value="">
+                            {{ form.body.label_tag }}
+                            <div id="preview_body"
+                                style="white-space: pre-wrap;padding: 1rem;border: 1px solid #dee2e6; min-height:300px">
+                            </div>
+                            <input type="hidden" name="mail_body" id="mail_body" value="">
+                            <button type="submit" value="send" class="btn btn-primary mt-3">Send Email</button>
+                        </form>
                     </div>
                     <div id="editor_container" class="col" style="display:none;">
-                        <h4>Editor</h4>
+                        <h4>Template Editor</h4>
                         <form id="emailTemplateForm" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="template_id" id="template_id" form="emailTemplateForm" value="{{template_id}}">
+                            {{ form.name.label_tag }}
+                            <input readonly required name="name" id="template_name_input" type="text" class="form-control" placeholder="Template Name" value="{{form.name.value}}" />
                             {{ form.name }}
                             {{ form.subject_line.label_tag }} {{form.subject_line}}
                             {{ form.body.label_tag }} {{form.body}}
@@ -122,8 +132,11 @@
             const edit_mode = document.getElementById('edit_mode');
             const editor_container = document.getElementById('editor_container');
 
+            const preview_template_name = document.getElementById('preview_template_name');
             const preview_subject = document.getElementById('preview_subject');
+            const mail_subject = document.getElementById('mail_subject');
             const preview_body = document.getElementById('preview_body');
+            const mail_body = document.getElementById('mail_body');
             
             const template_id = document.getElementById('template_id'); 
             const input_name = document.getElementById('template_name_input');
@@ -147,14 +160,18 @@
 
             textarea_subject.addEventListener('input', () => {
                 preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+                mail_subject.value = preview_subject.innerHTML
             });
             textarea_body.addEventListener('input', () => {
                 preview_body.innerHTML= renderTemplate(textarea_body.value, context);
+                mail_body.value = preview_body.innerHTML
             });
 
             // Trigger initial render
             preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
+            mail_subject.value = preview_subject.innerHTML
             preview_body.innerHTML = renderTemplate(textarea_body.value, context);
+            mail_body.value = preview_body.innerHTML
 
             document.querySelectorAll('.template-link').forEach(item => {
                 item.addEventListener('click', function () {
@@ -168,6 +185,7 @@
                     textarea_body.value = selected.body;
                     
                     input_name.value = selected.name;
+                    preview_template_name.value = selected.name;
                     preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
                     preview_body.innerHTML = renderTemplate(textarea_body.value, context);
                 });

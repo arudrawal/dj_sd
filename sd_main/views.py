@@ -362,15 +362,24 @@ def send_email(request, template_id=None):
                 return redirect(f'/send_email/{template_id}')
             else:
                 print(form.errors)
+        if action == "send":
+            # instance = get_object_or_404(EmailTemplate, id=template_id)
+            # form = EmailTemplateForm(request.POST, instance=instance)
+            if form.is_valid():
+                form.save()
+                print('template saved')
+                return redirect(f'/send_email/{template_id}')
+            else:
+                print(form.errors)
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
-    if template_id:
+    if template_id: # if any template is selected by user
         instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
         form = EmailTemplateForm(request.POST or None, instance=instance)
-    elif templates and len(templates) > 0:
+    elif templates and len(templates) > 0: # else pick first templates as selected
         form = EmailTemplateForm(request.POST or None, instance=templates[0])
         template_id = templates[0].id
-    else:
+    else: # blank form
         form = EmailTemplateForm(request.POST or None, initial={})
     variables = {}
     if 'agency' in context_dict:

@@ -87,7 +87,7 @@ class Customer(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
     name = models.CharField(max_length=128, db_column=constants.CUSTOMER_NAME_COLUMN)
     company_account = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_COMPANY_ACCOUNT)
-    email = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_EMAIL_COLUMN)
+    email = models.CharField(max_length=256, null=True, db_column=constants.CUSTOMER_EMAIL_COLUMN)
     phone = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_PHONE_COLUMN)
     dob = models.DateField(null=True, db_column=constants.CUSTOMER_DOB_COLUMN)
     # Other fields
@@ -146,30 +146,46 @@ class PolicyDocument(models.Model):
     policy = models.ForeignKey('Policy', on_delete=models.CASCADE)
     file_name_uploaded = models.CharField(max_length=512)
     file_name_cloud = models.CharField(max_length=512)
-    file_type = models.CharField(max_length=32)
+    file_type = models.CharField(max_length=128)
     file_text_extract = models.TextField(null=True)
 
 class Driver(models.Model):
     policy = models.ForeignKey('Policy', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    driving_license = models.CharField(max_length=50)
+    name = models.CharField(max_length=256)
+    driving_license = models.CharField(max_length=256)
     issue_date = models.DateField()
     expiry_date = models.DateField()
 
 class Vehicle(models.Model):
     policy = models.ForeignKey('Policy', on_delete=models.CASCADE)
-    vin = models.CharField(max_length=100)
-    license_plate = models.CharField(max_length=50)
+    vin = models.CharField(max_length=256)
+    license_plate = models.CharField(max_length=256)
     reg_end_date = models.DateField()
-    registered_owner = models.CharField(max_length=100)
+    registered_owner = models.CharField(max_length=256)
 
 class EmailTemplate(models.Model):
     agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
-    subject_line = models.CharField(max_length=128)
+    name = models.CharField(max_length=256)
+    subject_line = models.CharField(max_length=256)
     body = models.TextField()
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
-    category = models.CharField(max_length=100, null=True)
-    sub_category = models.CharField(max_length=100, null=True)
+    category = models.CharField(max_length=256, null=True)
+    sub_category = models.CharField(max_length=256, null=True)
+
+# Maintain history of sent emails. 
+# Customer - must exist to send email.
+# Mail could related to Policy or Alert or could be normal communication.
+# Template: may or may not be used.
+class SentEmail(models.Model):
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE) # 
+    policy = models.ForeignKey('Policy', on_delete=models.CASCADE)
+    pilicy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE)
+    template = models.ForeignKey('EmailTemplate', on_delete=models.CASCADE)
+    mail_to = models.TextField()
+    subject_line = models.CharField(max_length=256)
+    body = models.TextField()
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
 
