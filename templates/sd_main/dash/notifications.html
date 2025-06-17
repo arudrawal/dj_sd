@@ -2,8 +2,12 @@
 {% block page_script %}
 <script>
     function submitSelectForm(alert_id) {
-        const parentForm = document.getElementById("form_select_alert_"+alert_id);
-        parentForm.submit();
+        const parentFormSel = document.getElementById("form_select_alert_"+alert_id);
+        parentFormSel.submit();
+    }
+    function submitEditForm(alert_id) {
+        const parentFormSel = document.getElementById("form_edit_alert_"+alert_id);
+        parentFormSel.submit();
     }
     $("#dj_notification_table").DataTable();
 </script>
@@ -134,8 +138,8 @@
                                     <form action="{% url 'select_alert' %}" method="post" name="form_select_alert_{{alert.id}}" id="form_select_alert_{{alert.id}}">
                                         {% csrf_token %}
                                         <input type="hidden" name="selected_alert_id" value="{{alert.id}}"></hidden>
-                                        <button type="submit" style="display: none;">Select</button>
-                                        <a href="javascript:submitSelectForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
+                                        <button name='select_alert' id='select_alert_id' type="submit" style="display: none;">Select</button>
+                                        <a href="javascript:submitSelectForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="select_row">
                                             Select
                                         </a>
                                     </form>
@@ -144,9 +148,16 @@
                                 
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-kt-docs-table-filter="delete_row">
-                                        Email
-                                    </a>
+                                    {% with edit_id="form_edit_alert_{{alert.id}}" %}
+                                    <form action="{% url 'edit_alert' %}" method="post" name="form_edit_alert_{{alert.id}}" id="form_edit_alert_{{alert.id}}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="edit_alert_id" value="{{alert.id}}"></hidden>
+                                        <button name='edit_alert' id='edit_alert_id' type="submit" style="display: none;" action="edit">Edit</button>
+                                        <a href="javascript:submitEditForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
+                                            Edit
+                                        </a>
+                                    </form>
+                                    {% endwith %}
                                 </div>
                                 <!--end::Menu item-->
                             </div>

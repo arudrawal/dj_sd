@@ -6,7 +6,8 @@
 SHELL=/usr/bin/bash
 
 VERSION_FILE="./sd_main/version.py"
-BUILD_TIME=`date +%Y-%m-%dT%H:%M`
+BUILD_DAY=`date +%Y-%m-%d`
+BUILD_TIME=`date +%H:%M`
 BUILD_HOST=`hostname`
 
 ### commands, no file dependencies ###
@@ -18,7 +19,8 @@ all: version
 
 version:
 	truncate -s 0 ${VERSION_FILE}
-	echo "VERSION='0.0.1'" >> ${VERSION_FILE}
+	echo "VERSION='v0.1'" >> ${VERSION_FILE}
+	echo "BUILD_DAY='${BUILD_DAY}'" >> ${VERSION_FILE}
 	echo "BUILD_TIME='${BUILD_TIME}'" >> ${VERSION_FILE}
 	echo "BUILD_HOST='${BUILD_HOST}'" >> ${VERSION_FILE}
 	cat ${VERSION_FILE}

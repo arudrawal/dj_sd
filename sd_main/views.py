@@ -34,14 +34,15 @@ def get_common_context(request, page_title: str):
         'session_data': request.session,
         'agency': None,
         'app_version': version.VERSION,
-        'app_build_time': version.BUILD_TIME, # Docker image build time
-        'app_build_host': version.BUILD_HOST, # Docker image build host
+        'app_build_day': version.BUILD_DAY, # Docker image build day
+        'app_build_time': version.BUILD_TIME, # time
+        'app_build_host': version.BUILD_HOST, # host
     }
     if 'agency_name' in request.session: # session has agency
         db_agency = Agency.objects.filter(name=request.session['agency_name']).first()
         if db_agency:
             context_dict['agency'] = db_agency
-    else: 
+    else:
         # user_group = request.user.groups.all()[0]
         db_user_agencies = AgencyUser.objects.filter(user=request.user).all()
         if db_user_agencies:
@@ -98,6 +99,33 @@ def select_alert(request):
             if db_alert:
                 request.session['selected_alert_id'] = db_alert.id
     return redirect('index')
+
+@login_required
+def edit_alert(request):
+    context_dict = get_common_context(request, 'Edit Alert')
+    if request.method == "POST":
+        edit_alert_id = request.POST.get('edit_alert_id')
+        if edit_alert_id:
+            if db_alert.id != context_dict['alert'].id: # not selected
+                db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
+                if db_alert:
+                    request.session['selected_alert_id'] = db_alert.id
+                    context_dict['alert'] = db_alert
+    return render(request, 'sd_main/dash/edit_alert.html', context=context_dict)
+
+@login_required
+def save_alert(request):
+    context_dict = get_common_context(request, 'Save Alert')
+    if request.method == "POST":
+        customer_id = request.POST.get('customer_id')
+        if customer_id:
+            db_customer = Customer.objects.get(id=int(customer_id))
+            if db_customer:
+                customer_email = request.POST.get('email')
+                customer_phone = request.POST.get('phone')
+                db_customer.phone = customer_phone
+                db_customer.customer_email = customer_email
+    return redirect('edit_alert')
 
 
 @login_required
@@ -492,3 +520,4 @@ def upload_policy(request):
                 context_dict['error'] = f'{request_file.name}: empty or invalid file!'
                 # return render(request, "sd_main/dash/upload.html", context_dict)
     return render(request, "sd_main/dash/upload.html", context=context_dict)
+

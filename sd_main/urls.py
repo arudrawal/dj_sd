@@ -8,6 +8,8 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("login_agency/", views.login_agency, name="login_agency"),
     path("select_alert/", views.select_alert, name="select_alert"),
+    path("edit_alert/", views.edit_alert, name="edit_alert"),
+    path("save_alert/", views.edit_alert, name="save_alert"),
     path("customers/", views.customers, name="customers"),
     path("policies/", views.policies, name="policies"),
     path("email_oauth/", views.email_oauth, name="email_oauth"),
@@ -19,7 +21,7 @@ urlpatterns = [
     path("send_email/", views.send_email, name="send_email"),
     path("send_email/<int:template_id>/", views.send_email, name="send_email_id"),
     path("drivers/", views.drivers, name="drivers"),
-    path("upload_policy/", views.upload_policy, name="upload_policy"),
+    path("upload_policy/", views.upload_policy, name="upload_policy"),    
 ]
 # Add MEDIA_URL route and serve the uploaded file when a user makes a GET request to MEDIA_URL/(file name). 
 # Once all this is done, the files uploaded should show up in the directory specified in the MEDIA_ROOT constant.
