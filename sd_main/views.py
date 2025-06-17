@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 
 from .forms import UploadPolicyForm, EmailTemplateForm
 from .forms import AgencyForm
-from . import constants
+from . import constants, version
 
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
@@ -29,7 +29,14 @@ def remove_object_from_session(request, key):
         request.session.modified = True
 
 def get_common_context(request, page_title: str):
-    context_dict = {'page_title': page_title, 'session_data': request.session,'agency': None}
+    context_dict = {
+        'page_title': page_title,
+        'session_data': request.session,
+        'agency': None,
+        'app_version': version.VERSION,
+        'app_build_time': version.BUILD_TIME, # Docker image build time
+        'app_build_host': version.BUILD_HOST, # Docker image build host
+    }
     if 'agency_name' in request.session: # session has agency
         db_agency = Agency.objects.filter(name=request.session['agency_name']).first()
         if db_agency:
@@ -362,15 +369,33 @@ def send_email(request, template_id=None):
                 return redirect(f'/send_email/{template_id}')
             else:
                 print(form.errors)
+        if action == "delete" and template_id:
+            instance = get_object_or_404(EmailTemplate, id=template_id)
+            # form = EmailTemplateForm(request.POST, instance=instance)
+            if instance:
+                instance.delete()
+                print('template Deleted')
+                return redirect(f'/send_email')
+            else:
+                print(form.errors)
+        if action == "send":
+            template_id = request.POST.get("mail_template_id")
+            mail_to = request.POST.get('mail_to') 
+            if mail_to:
+                mail_subject = request.POST.get('mail_subject')
+                mail_body = request.POST.get('mail_body')
+                print(f'Sent Email to: {mail_to}')
+            return redirect(f'/send_email/{template_id}')
+
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
-    if template_id:
+    if template_id: # if any template is selected by user
         instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
         form = EmailTemplateForm(request.POST or None, instance=instance)
-    elif templates and len(templates) > 0:
+    elif templates and len(templates) > 0: # else pick first templates as selected
         form = EmailTemplateForm(request.POST or None, instance=templates[0])
         template_id = templates[0].id
-    else:
+    else: # blank form
         form = EmailTemplateForm(request.POST or None, initial={})
     variables = {}
     if 'agency' in context_dict:
@@ -467,4 +492,3 @@ def upload_policy(request):
                 context_dict['error'] = f'{request_file.name}: empty or invalid file!'
                 # return render(request, "sd_main/dash/upload.html", context_dict)
     return render(request, "sd_main/dash/upload.html", context=context_dict)
-
