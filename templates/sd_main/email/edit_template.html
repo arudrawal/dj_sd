@@ -36,7 +36,8 @@
                                 style="white-space: pre-wrap;padding: 1rem;border: 1px solid #dee2e6; min-height:300px">
                             </div>
                             <input type="hidden" name="mail_body" id="mail_body" value="">
-                            <button type="submit" value="send" class="btn btn-primary mt-3">Send Email</button>
+                            <input type="hidden" name="mail_template_id" id="mail_template_id" form="emailForm" value="{{template_id}}">
+                            <button type="submit" name="action" value="send" class="btn btn-primary mt-3">Send Email</button>
                         </form>
                     </div>
                     <div id="editor_container" class="col" style="display:none;">
@@ -60,6 +61,11 @@
                                     value="create"
                                     class="btn btn-primary mt-3"
                                     >Save As New</button>
+                            <button type="submit"
+                                    name="action"
+                                    value="delete"
+                                    class="btn btn-primary mt-3"
+                                    >Delete</button>
                         </form>
                         <div class="d-flex flex-row justify-content-center">
                         </div>
@@ -133,6 +139,7 @@
             const editor_container = document.getElementById('editor_container');
 
             const preview_template_name = document.getElementById('preview_template_name');
+            const preview_template_id = document.getElementById('mail_template_id'); 
             const preview_subject = document.getElementById('preview_subject');
             const mail_subject = document.getElementById('mail_subject');
             const preview_body = document.getElementById('preview_body');
@@ -185,6 +192,7 @@
                     textarea_body.value = selected.body;
                     
                     input_name.value = selected.name;
+                    preview_template_id.value = selected.id;
                     preview_template_name.value = selected.name;
                     preview_subject.innerHTML = renderTemplate(textarea_subject.value, context);
                     preview_body.innerHTML = renderTemplate(textarea_body.value, context);

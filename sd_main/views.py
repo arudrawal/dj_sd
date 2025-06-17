@@ -362,15 +362,24 @@ def send_email(request, template_id=None):
                 return redirect(f'/send_email/{template_id}')
             else:
                 print(form.errors)
-        if action == "send":
-            # instance = get_object_or_404(EmailTemplate, id=template_id)
+        if action == "delete" and template_id:
+            instance = get_object_or_404(EmailTemplate, id=template_id)
             # form = EmailTemplateForm(request.POST, instance=instance)
-            if form.is_valid():
-                form.save()
-                print('template saved')
-                return redirect(f'/send_email/{template_id}')
+            if instance:
+                instance.delete()
+                print('template Deleted')
+                return redirect(f'/send_email')
             else:
                 print(form.errors)
+        if action == "send":
+            template_id = request.POST.get("mail_template_id")
+            mail_to = request.POST.get('mail_to') 
+            if mail_to:
+                mail_subject = request.POST.get('mail_subject')
+                mail_body = request.POST.get('mail_body')
+                print(f'Sent Email to: {mail_to}')
+            return redirect(f'/send_email/{template_id}')
+
     context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
     if template_id: # if any template is selected by user
