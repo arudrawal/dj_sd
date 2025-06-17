@@ -104,10 +104,10 @@ def select_alert(request):
 def edit_alert(request):
     context_dict = get_common_context(request, 'Edit Alert')
     if request.method == "POST":
-        edit_alert_id = request.POST.get('edit_alert_id')
-        if edit_alert_id:
-            if db_alert.id != context_dict['alert'].id: # not selected
-                db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
+        alert_id = request.POST.get('alert_id')
+        if alert_id:
+            if alert_id != context_dict['alert'].id: # editing alert other than selected
+                db_alert = PolicyAlert.objects.get(id=int(alert_id))
                 if db_alert:
                     request.session['selected_alert_id'] = db_alert.id
                     context_dict['alert'] = db_alert
@@ -117,14 +117,15 @@ def edit_alert(request):
 def save_alert(request):
     context_dict = get_common_context(request, 'Save Alert')
     if request.method == "POST":
-        customer_id = request.POST.get('customer_id')
+        customer_id = request.POST.get('edit_customer_id')
         if customer_id:
             db_customer = Customer.objects.get(id=int(customer_id))
             if db_customer:
                 customer_email = request.POST.get('email')
                 customer_phone = request.POST.get('phone')
                 db_customer.phone = customer_phone
-                db_customer.customer_email = customer_email
+                db_customer.email = customer_email
+                db_customer.save()
     return redirect('edit_alert')
 
 
