@@ -29,5 +29,11 @@ push:
 	aws ecr get-login-password --region us-west-2 --profile shivark | docker login --username AWS --password-stdin 198752717356.dkr.ecr.us-west-2.amazonaws.com
 	docker push 198752717356.dkr.ecr.us-west-2.amazonaws.com/shivark/dj_sd:latest
 
+flush_mig:
+	rm -f db.sqlite3
+	rm -f sd_main/migrations/0001_initial*.py
+	python3 manage.py makemigrations
+	python3 manage.py migrate
+	python3 data/seed_database.py
 
 

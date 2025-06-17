@@ -19,6 +19,7 @@ CUSTOMER_DOB_COLUMN = "dob"
 POLICY_NUMBER_COLUMN = "number"
 POLICY_START_DATE_COLUMN = "start_date"
 POLICY_END_DATE_COLUMN = "end_date"
+POLICY_PREMIUM_COLUMN = "premium"
 POLICY_LOB_COLUMN = "lob"
 
 # table: sd_main_policy_alert

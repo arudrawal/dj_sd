@@ -104,10 +104,10 @@ def select_alert(request):
 def edit_alert(request):
     context_dict = get_common_context(request, 'Edit Alert')
     if request.method == "POST":
-        alert_id = request.POST.get('alert_id')
-        if alert_id:
-            if alert_id != context_dict['alert'].id: # editing alert other than selected
-                db_alert = PolicyAlert.objects.get(id=int(alert_id))
+        edit_alert_id = request.POST.get('edit_alert_id')
+        if edit_alert_id:
+            if edit_alert_id != context_dict['alert'].id: # editing alert other than selected
+                db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
                 if db_alert:
                     request.session['selected_alert_id'] = db_alert.id
                     context_dict['alert'] = db_alert

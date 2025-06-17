@@ -104,6 +104,7 @@ class Policy(models.Model):
     number = models.CharField("Policy Number", max_length=128, db_column=constants.POLICY_NUMBER_COLUMN)
     start_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_START_DATE_COLUMN)
     end_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_END_DATE_COLUMN)
+    premium_amount = models.DecimalField(null=True, blank=False, db_column=constants.POLICY_PREMIUM_COLUMN, decimal_places=2, max_digits=10)
     LOB = (
         ('Auto', 'Auto'),
         ('Home', 'Home'),
