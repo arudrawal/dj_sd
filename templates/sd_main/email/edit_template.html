@@ -27,7 +27,7 @@
                         <form id="emailForm" method="POST">
                             {% csrf_token %}
                             <label for="mail_to">Mail To:</label>
-                            <input required name="mail_to" id="mail_to" type="text" class="form-control" placeholder="customer@mail.com" value="" />
+                            <input required name="mail_to" id="mail_to" type="text" class="form-control" placeholder="customer@mail.com" value="{{variables.customer_email}}" />
                             {{ form.subject_line.label_tag }}
                             <div id="preview_subject" style="padding: 1rem; border: 1px solid #dee2e6;resize: none;"></div>
                             <input type="hidden" name="mail_subject" id="mail_subject" value="">

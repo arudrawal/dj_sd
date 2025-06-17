@@ -104,13 +104,19 @@ def select_alert(request):
 def edit_alert(request):
     context_dict = get_common_context(request, 'Edit Alert')
     if request.method == "POST":
+        select_alert = False
         edit_alert_id = request.POST.get('edit_alert_id')
         if edit_alert_id:
-            if edit_alert_id != context_dict['alert'].id: # editing alert other than selected
-                db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
-                if db_alert:
-                    request.session['selected_alert_id'] = db_alert.id
-                    context_dict['alert'] = db_alert
+            if 'alert' in context_dict.keys(): # alert is selected
+                if edit_alert_id != context_dict['alert'].id: # editing alert other than selected
+                    select_alert = True
+            else:
+                select_alert = True
+        if select_alert:
+            db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
+            if db_alert:
+                request.session['selected_alert_id'] = db_alert.id
+                context_dict['alert'] = db_alert
     return render(request, 'sd_main/dash/edit_alert.html', context=context_dict)
 
 @login_required
@@ -126,6 +132,13 @@ def save_alert(request):
                 db_customer.phone = customer_phone
                 db_customer.email = customer_email
                 db_customer.save()
+        policy_id = request.POST.get('edit_policy_id')
+        if policy_id:
+            db_policy = Policy.objects.get(id=int(policy_id))
+            if db_policy:
+                policy_end_date = request.POST.get('exp_date')
+                db_policy.end_date = policy_end_date
+                db_policy.save()
     return redirect('edit_alert')
 
 
@@ -438,7 +451,7 @@ def send_email(request, template_id=None):
         customer = context_dict['alert'].customer
         variables['policy_number'] = policy.number
         variables['policy_type'] = policy.lob
-        variables['expiration_date'] = policy.end_date
+        variables['expiration_date'] = policy.end_date.strftime("%Y-%m-%d")
         variables['customer_name'] = customer.name
         variables['customer_email'] = customer.email
         variables['customer_phone'] = customer.phone

@@ -243,6 +243,9 @@ def add_policy(df_policy: pd.DataFrame, db_agency: Agency):
         if constants.POLICY_END_DATE_COLUMN in df_policy.columns:
             if len(row[constants.POLICY_END_DATE_COLUMN]):
                 db_policy.end_date = row[constants.POLICY_END_DATE_COLUMN]
+        if constants.POLICY_PREMIUM_COLUMN in df_policy.columns:
+            if len(row[constants.POLICY_PREMIUM_COLUMN]):
+                db_policy.premium_amount = row[constants.POLICY_PREMIUM_COLUMN]
         policy_instances.append(db_policy)
     Policy.objects.bulk_create(policy_instances)
     return len(policy_instances)
