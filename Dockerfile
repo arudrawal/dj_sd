@@ -47,10 +47,6 @@ COPY --chown=$USERNAME:$GROUPNAME . .
 # Make the shell script executable
 RUN chmod +x $APP_DIR/startup.sh
 
-# Set environment variables to optimize Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1 
-
 # Switch to non-root user
 USER $USERNAME
 

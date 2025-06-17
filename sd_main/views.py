@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 
 from .forms import UploadPolicyForm, EmailTemplateForm
 from .forms import AgencyForm
-from . import constants
+from . import constants, version
 
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
@@ -29,7 +29,14 @@ def remove_object_from_session(request, key):
         request.session.modified = True
 
 def get_common_context(request, page_title: str):
-    context_dict = {'page_title': page_title, 'session_data': request.session,'agency': None}
+    context_dict = {
+        'page_title': page_title,
+        'session_data': request.session,
+        'agency': None,
+        'app_version': version.VERSION,
+        'app_build_time': version.BUILD_TIME, # Docker image build time
+        'app_build_host': version.BUILD_HOST, # Docker image build host
+    }
     if 'agency_name' in request.session: # session has agency
         db_agency = Agency.objects.filter(name=request.session['agency_name']).first()
         if db_agency:
@@ -485,4 +492,3 @@ def upload_policy(request):
                 context_dict['error'] = f'{request_file.name}: empty or invalid file!'
                 # return render(request, "sd_main/dash/upload.html", context_dict)
     return render(request, "sd_main/dash/upload.html", context=context_dict)
-
