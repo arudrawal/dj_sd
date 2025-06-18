@@ -17,7 +17,7 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 
 from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer, \
-    SystemSetting, EmailTemplate
+    SystemSetting, EmailTemplate, GoogleAuthContext, SentEmail
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
@@ -52,6 +52,27 @@ def get_common_context(request, page_title: str):
         db_alert = PolicyAlert.objects.get(id=int(request.session['selected_alert_id']))
         if db_alert:
             context_dict['alert'] = db_alert
+    return context_dict
+
+def get_google_callback_context(request, state: str):
+    context_dict = {
+        'page_title': '',
+        'agency': None,
+        'app_version': version.VERSION,
+        'app_build_day': version.BUILD_DAY, # Docker image build day
+        'app_build_time': version.BUILD_TIME, # time
+        'app_build_host': version.BUILD_HOST, # host
+    }
+    db_context = GoogleAuthContext.objects.filter(state=state).first()
+    if db_context:
+        if db_context.agency:
+            context_dict['agency'] = db_context.agency
+            context_dict['agency_name'] = db_context.agency.name
+        if db_context.policy_alert:
+            context_dict['alert'] = db_context.policy_alert
+            request.session['selected_alert_id'] = db_context.policy_alert.id
+        if db_context.user:
+            pass
     return context_dict
 
 # Create your views here.
@@ -280,22 +301,28 @@ def gmail_oauth_authorize(request):
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
     auth_url, state = get_google_auth_url(db_gmail)
     request.session['state'] = state
+    # Save context to database - state is the only key
+    auth_context = GoogleAuthContext(auth_url=auth_url, state=state)
+    auth_context.agency = context_dict['agency']
+    auth_context.user = request.user
+    auth_context.email = db_gmail.text_value
+    if 'alert' in context_dict:
+        auth_context.policy_alert = context_dict['alert']
+    auth_context.save()
     return redirect(auth_url)
 
 # @login_required - not required
 # sample: http://localhost:8000/accounts/login/?next=/gmail_oauth_callback/%3Fstate%3DZiNxYBOuAFxlA45t7JeBMOxGxld6FY%26code%3D4/0AUJR-x4LXrMoL_3erqmJqfb9lYJytm3R7IHWYmoPiB_if0pSkyhS12DkFKRy-XX7RmpemQ%26scope%3Dhttps%3A//www.googleapis.com/auth/gmail.send
 # How do we know: agency from callback ?
 def gmail_oauth_callback(request):
-    request_state = session_state =  None
+    callback_state = callback_code =  None
     if 'code' not in request.GET:
         return HttpResponse("Authorization failed", status=400)
-    if 'state' in request.session:
-        session_state = request.session['state']
-    context_dict = get_common_context(request, 'Gmail Callback')
-    if 'state' in request.GET:        
-        request_state = request.GET['state']
-        remove_object_from_session(request, 'state')
-    if session_state == request_state and context_dict['agency']:
+    callback_code = request.GET['code']
+    if 'state' in request.GET:
+        callback_state = request.GET['state']
+    context_dict = get_google_callback_context(request, callback_state)
+    if context_dict['agency']:
         flow = get_google_auth_flow()
         flow.fetch_token(code=request.GET['code']) # fetch and fill token from gmail
         creds = flow.credentials
@@ -343,7 +370,7 @@ def gmail_oauth_revoke(request):
     return redirect("email_oauth")
 
 @login_required
-def email_oauth_test(request):
+def send_test_email(request):
     import base64
     from email.message import EmailMessage
     from googleapiclient.discovery import build
@@ -383,6 +410,7 @@ def send_email(request, template_id=None):
     #TODO Save email feature
     #TODO Save as New Email feature
     #TODO Send Email feature
+    context_dict = get_common_context(request, 'Send Email')
     if request.method == "POST":
         action = request.POST.get("action")
         template_id = request.POST.get("template_id")
@@ -399,9 +427,8 @@ def send_email(request, template_id=None):
         if action == 'create':
             form = EmailTemplateForm(request.POST)
             if form.is_valid():
-                context = get_common_context(request, 'Send Email')
                 email_template = EmailTemplate(
-                    agency=context['agency'],
+                    agency=context_dict['agency'],
                     name=form.cleaned_data['name'],
                     subject_line=form.cleaned_data['subject_line'],
                     body=form.cleaned_data['body'])
@@ -426,10 +453,16 @@ def send_email(request, template_id=None):
             if mail_to:
                 mail_subject = request.POST.get('mail_subject')
                 mail_body = request.POST.get('mail_body')
+                db_sent = SentEmail(mail_to=mail_to,
+                                    body = mail_body,
+                                    subject_line=mail_subject,
+                                    agency=context_dict['agency'],
+                                    policy = context_dict['alert'].policy,
+                                    customer = context_dict['alert'].customer)
+                db_sent.save() # Save this email to database, before sending
                 print(f'Sent Email to: {mail_to}')
             return redirect(f'/send_email/{template_id}')
 
-    context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
     if template_id: # if any template is selected by user
         instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
@@ -451,7 +484,7 @@ def send_email(request, template_id=None):
         customer = context_dict['alert'].customer
         variables['policy_number'] = policy.number
         variables['policy_type'] = policy.lob
-        variables['expiration_date'] = policy.end_date.strftime("%Y-%m-%d")
+        variables['expiration_date'] = policy.end_date.strftime("%Y-%m-%d") if policy.end_date else None
         variables['customer_name'] = customer.name
         variables['customer_email'] = customer.email
         variables['customer_phone'] = customer.phone

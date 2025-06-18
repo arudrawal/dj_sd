@@ -190,3 +190,13 @@ class SentEmail(models.Model):
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
 
+class GoogleAuthContext(models.Model):
+    state = models.TextField()
+    auth_url = models.TextField()
+    code = models.TextField(null=True)
+    email = models.TextField(null=True)
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='id')
+    policy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE, null=True)
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
