@@ -126,7 +126,7 @@ def get_mail_client_credentials():
         if json_content:
             client_id_data = json.loads(json_content)
     elif os.path.exists(gmail_client_path):
-        callback_url = 'http://localhost:8000/{AUTH_CALLBACK_URI}/'
+        callback_url = f'http://localhost:8000/{AUTH_CALLBACK_URI}/'
         with open(gmail_client_path, "r") as client_id_file:
             client_id_data = json.load(client_id_file)
     return client_id_data, callback_url

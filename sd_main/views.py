@@ -256,9 +256,10 @@ def email_oauth(request):
     context_dict = get_common_context(request, 'Agency Settings')
     db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
-    db_gmail_client = None
+    db_gmail_client = db_gmail_callback = None
     if db_gmail_provider and db_gmail_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
         db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+        db_gmail_callback = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
     if request.method == "POST":
         provider = request.POST.get('provider')
         if provider:            
@@ -283,6 +284,8 @@ def email_oauth(request):
         context_dict['email'] = db_gmail.text_value
     if db_gmail_client:
         context_dict['client_id'] = db_gmail_client.json_value
+    if db_gmail_callback:
+        context_dict['gmail_callback'] = db_gmail_callback.text_value
 
     context_dict['auth_token'] = context_dict['auth_url'] = None
     if db_gmail_provider and db_gmail:
