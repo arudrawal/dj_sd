@@ -259,14 +259,17 @@ def load_system_settings():
     from sd_main.models import SystemSetting
     ret_val = False
     client_id_data, callback_url = get_mail_client_credentials()
-    db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
-    if not db_gmail_client:
-        db_gmail_client = SystemSetting.objects.create(name=SystemSetting.GMAIL_CLIENT_ID, json_value=client_id_data)
-        ret_val = True
-    db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
-    if not db_gmail_redirect_url:
-        db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL, text_value=callback_url)
-        ret_val = True
+    if client_id_data and callback_url:
+        db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+        if not db_gmail_client:
+            db_gmail_client = SystemSetting.objects.create(name=SystemSetting.GMAIL_CLIENT_ID, json_value=client_id_data)
+            ret_val = True
+        db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
+        if not db_gmail_redirect_url:
+            db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL, text_value=callback_url)
+            ret_val = True
+    else:
+        print (f"Failed to read Gmail API client ID and callback URL")
     return ret_val
 
 if __name__ == '__main__':
