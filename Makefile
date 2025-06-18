@@ -34,6 +34,10 @@ flush_mig:
 	rm -f sd_main/migrations/0001_initial*.py
 	python3 manage.py makemigrations
 	python3 manage.py migrate
-	python3 data/seed_database.py
+	python3 seed_database.py
 
+flush_db:
+	rm -f db.sqlite3
+	python3 manage.py migrate
+	python3 seed_database.py
 
