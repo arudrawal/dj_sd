@@ -101,6 +101,7 @@
 	<!--end::Body-->
     <!--begin::Body-->
     {% if auth_token %}
+    <br/>
     <div class="card shadow-sm">
         <div class="card-body">
             <a href="{%url 'send_test_email' %}" class="btn btn-light-primary">Send Test Email from {{provider}}: {{email}}</a>

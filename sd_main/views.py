@@ -372,22 +372,20 @@ def gmail_oauth_revoke(request):
             db_token.delete()
     return redirect("email_oauth")
 
-@login_required
-def send_test_email(request):
+def send_gmail_text(db_agency: Agency, to_email: str, subject: str, body: str):
     import base64
     from email.message import EmailMessage
     from googleapiclient.discovery import build
     # from .gmail_api import create_message, send_message
-    context_dict = get_common_context(request, 'Gmail Callback')
-    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
-    creds = get_gmail_credentials(context_dict['agency'])
+    db_gmail = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    creds = get_gmail_credentials(db_agency)
     try: 
         service = build('gmail', 'v1', credentials=creds)
         msg = EmailMessage()
-        msg.set_content("test message from dj_sd")
-        msg['To'] = "rudrawal@avconnect.ai"
+        msg.set_content(body)
+        msg['To'] = to_email
         msg['From'] = db_gmail.text_value
-        msg['Subject'] = 'DJ_SD: Test email'
+        msg['Subject'] = subject
         message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
         body = {'raw': message}
         send_message = (
@@ -398,14 +396,16 @@ def send_test_email(request):
         )
         print(F'Message Id: {send_message["id"]}')
     except Exception as error:
-        print(F'An error occurred: {error}')
-    """
-    service = build("gmail", "v1", credentials=creds)
-    subject="Test OAUTH gmail", 
-    email_text="test message from gmail oauth"
-    message = create_message(sender=db_gmail.text_value, to='ajay_rudrawal@hotmail.com', subject=subject, message_text=email_text)
-    send_message(service, db_gmail.text_value, message)
-    """
+        print(F'An error occurred: {error}')    
+
+@login_required
+def send_test_email(request):
+    context_dict = get_common_context(request, 'Gmail Callback')
+    db_agency = context_dict['agency']
+    subject = 'dj_sd: Test email'
+    body = "Test message from dj_sd"
+    to_email = "rudrawal@avconnect.ai"
+    send_gmail_text(db_agency, to_email, subject, body)
     return redirect("email_oauth")
 
 @login_required
@@ -452,17 +452,28 @@ def send_email(request, template_id=None):
                 print(form.errors)
         if action == "send":
             template_id = request.POST.get("mail_template_id")
-            mail_to = request.POST.get('mail_to') 
+            mail_to = request.POST.get('mail_to')
             if mail_to:
                 mail_subject = request.POST.get('mail_subject')
                 mail_body = request.POST.get('mail_body')
+                db_template = db_alert = db_customer = db_policy = db_template = None
+                if template_id:
+                    db_template = EmailTemplate.objects.get(id=template_id)
+                if 'alert' in context_dict:
+                    db_alert = context_dict['alert']
+                    db_customer = db_alert.customer
+                    db_policy = db_alert.policy
                 db_sent = SentEmail(mail_to=mail_to,
-                                    body = mail_body,
                                     subject_line=mail_subject,
+                                    body = mail_body,
                                     agency=context_dict['agency'],
-                                    policy = context_dict['alert'].policy,
-                                    customer = context_dict['alert'].customer)
+                                    policy_alert = db_alert,
+                                    customer = db_customer,
+                                    policy = db_policy,
+                                    template=db_template,
+                                    )
                 db_sent.save() # Save this email to database, before sending
+                send_gmail_text(context_dict['agency'], mail_to, mail_subject, mail_body)
                 print(f'Sent Email to: {mail_to}')
             return redirect(f'/send_email/{template_id}')
 
