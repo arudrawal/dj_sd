@@ -225,7 +225,12 @@ def load_system_settings():
             print(e)
     db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
     if not db_gmail_redirect_url:
-        db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL,
+        app_runner_url = os.environ.get("AWS_APP_RUNNER_DEFAULT_DOMAIN")
+        if app_runner_url:
+            db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL,
+                                                text_value=f'{app_runner_url}/gmail_oauth_callback/')
+        else:
+            db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL,
                                                 text_value='http://localhost:8000/gmail_oauth_callback/')
         ret_val = True
     return ret_val
