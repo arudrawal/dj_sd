@@ -102,10 +102,10 @@ def login_agency(request):
 
 @login_required
 def index(request):
-    context_dict = get_common_context(request, 'Notifications')
+    context_dict = get_common_context(request, 'Pending Alerts')
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
-        alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).order_by('due_date').all()
+        alerts = PolicyAlert.objects.filter(agency=context_dict['agency'], is_active=True).order_by('due_date').all()
         context_dict['alerts'] = alerts
     else:
         return redirect('login_agency')
@@ -522,6 +522,13 @@ def send_email(request, template_id=None):
             'templates': templates,
             'templates_data': mark_safe(json.dumps(template_data)),
         })
+
+@login_required
+def email_history(request):
+    context_dict = get_common_context(request, 'Send Email')
+    if request.method == "POST":
+        pass
+    return render(request, 'sd_main/dash/vehicles.html', context_dict)
 
 @login_required
 def vehicles(request):
