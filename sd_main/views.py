@@ -105,7 +105,7 @@ def index(request):
     context_dict = get_common_context(request, 'Notifications')
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
-        alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).all()
+        alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).order_by('due_date').all()
         context_dict['alerts'] = alerts
     else:
         return redirect('login_agency')
