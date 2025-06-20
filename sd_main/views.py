@@ -17,7 +17,7 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 
 from .models import Agency, AgencyUser, AgencySetting, Policy, PolicyAlert, Customer, \
-    SystemSetting, EmailTemplate
+    SystemSetting, EmailTemplate, GoogleAuthContext, SentEmail
 
 from .import_data import convert_to_dataframe, import_policy, import_customer, import_alert, extract_by_csv_map
 
@@ -34,14 +34,15 @@ def get_common_context(request, page_title: str):
         'session_data': request.session,
         'agency': None,
         'app_version': version.VERSION,
-        'app_build_time': version.BUILD_TIME, # Docker image build time
-        'app_build_host': version.BUILD_HOST, # Docker image build host
+        'app_build_day': version.BUILD_DAY, # Docker image build day
+        'app_build_time': version.BUILD_TIME, # time
+        'app_build_host': version.BUILD_HOST, # host
     }
     if 'agency_name' in request.session: # session has agency
         db_agency = Agency.objects.filter(name=request.session['agency_name']).first()
         if db_agency:
             context_dict['agency'] = db_agency
-    else: 
+    else:
         # user_group = request.user.groups.all()[0]
         db_user_agencies = AgencyUser.objects.filter(user=request.user).all()
         if db_user_agencies:
@@ -51,6 +52,32 @@ def get_common_context(request, page_title: str):
         db_alert = PolicyAlert.objects.get(id=int(request.session['selected_alert_id']))
         if db_alert:
             context_dict['alert'] = db_alert
+    context_dict['alert_category'] = context_dict['alert_sub_category'] = 'all'
+    if 'alert_category' in request.session:
+        context_dict['alert_category'] = request.session['alert_category']
+    if 'alert_sub_category' in request.session:
+        context_dict['alert_sub_category'] = request.session['alert_sub_category']
+    return context_dict
+
+def get_google_callback_context(request, state: str):
+    context_dict = {
+        'page_title': '',
+        'agency': None,
+        'app_version': version.VERSION,
+        'app_build_day': version.BUILD_DAY, # Docker image build day
+        'app_build_time': version.BUILD_TIME, # time
+        'app_build_host': version.BUILD_HOST, # host
+    }
+    db_context = GoogleAuthContext.objects.filter(state=state).first()
+    if db_context:
+        if db_context.agency:
+            context_dict['agency'] = db_context.agency
+            context_dict['agency_name'] = db_context.agency.name
+        if db_context.policy_alert:
+            context_dict['alert'] = db_context.policy_alert
+            request.session['selected_alert_id'] = db_context.policy_alert.id
+        if db_context.user:
+            pass
     return context_dict
 
 # Create your views here.
@@ -77,20 +104,41 @@ def login_agency(request):
     #    context_dict['agency_list'].append(agency)
     return render(request, 'registration/login_agency.html', context=context_dict)
 
-
 @login_required
 def index(request):
-    context_dict = get_common_context(request, 'Notifications')
+    return redirect("pending_alerts")
+
+@login_required
+def pending_alerts(request):
+    context_dict = get_common_context(request, 'Pending Alerts')
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
-        alerts = PolicyAlert.objects.filter(agency=context_dict['agency']).all()
+        cat_params = {}
+        if context_dict['alert_category'].lower() != 'all':
+            cat_params['alert_category'] = context_dict['alert_category']
+        if context_dict['alert_sub_category'].lower() != 'all':
+            cat_params['alert_sub_category'] = context_dict['alert_sub_category']
+        alerts = PolicyAlert.objects.filter(agency=context_dict['agency'], is_active=True, **cat_params).order_by('due_date').all()
         context_dict['alerts'] = alerts
     else:
         return redirect('login_agency')
+    context_dict['cats'] = PolicyAlert.objects.values_list('alert_category', flat=True).distinct()
+    context_dict['sub_cats'] = PolicyAlert.objects.values_list('alert_sub_category', flat=True).distinct()
     return render(request, 'sd_main/dash/notifications.html', context=context_dict)
 
 @login_required
-def select_alert(request):
+def filter_pending_alert(request):
+    if request.method == "POST":
+        category = request.POST.get('alert_category')
+        sub_category = request.POST.get('alert_sub_category')
+        if category:
+            request.session['alert_category'] = category
+        if sub_category:
+            request.session['alert_sub_category'] = sub_category
+    return redirect('pending_alerts')
+
+@login_required
+def select_pending_alert(request):
     if request.method == "POST":
         selected_alert_id = request.POST.get('selected_alert_id')
         if selected_alert_id:
@@ -98,6 +146,47 @@ def select_alert(request):
             if db_alert:
                 request.session['selected_alert_id'] = db_alert.id
     return redirect('index')
+
+@login_required
+def edit_pending_alert(request):
+    context_dict = get_common_context(request, 'Edit Alert')
+    if request.method == "POST":
+        select_alert = False
+        edit_alert_id = request.POST.get('edit_alert_id')
+        if edit_alert_id:
+            if 'alert' in context_dict.keys(): # alert is selected
+                if edit_alert_id != context_dict['alert'].id: # editing alert other than selected
+                    select_alert = True
+            else:
+                select_alert = True
+        if select_alert:
+            db_alert = PolicyAlert.objects.get(id=int(edit_alert_id))
+            if db_alert:
+                request.session['selected_alert_id'] = db_alert.id
+                context_dict['alert'] = db_alert
+    return render(request, 'sd_main/dash/edit_alert.html', context=context_dict)
+
+@login_required
+def save_pending_alert(request):
+    context_dict = get_common_context(request, 'Save Alert')
+    if request.method == "POST":
+        customer_id = request.POST.get('edit_customer_id')
+        if customer_id:
+            db_customer = Customer.objects.get(id=int(customer_id))
+            if db_customer:
+                customer_email = request.POST.get('email')
+                customer_phone = request.POST.get('phone')
+                db_customer.phone = customer_phone
+                db_customer.email = customer_email
+                db_customer.save()
+        policy_id = request.POST.get('edit_policy_id')
+        if policy_id:
+            db_policy = Policy.objects.get(id=int(policy_id))
+            if db_policy:
+                policy_end_date = request.POST.get('exp_date')
+                db_policy.end_date = policy_end_date
+                db_policy.save()
+    return redirect('edit_alert')
 
 
 @login_required
@@ -193,9 +282,10 @@ def email_oauth(request):
     context_dict = get_common_context(request, 'Agency Settings')
     db_gmail_provider = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_PROVIDER).first()
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
-    db_gmail_client = None
+    db_gmail_client = db_gmail_callback = None
     if db_gmail_provider and db_gmail_provider.text_value == AgencySetting.AUTH_PRIVIDER_GOOGLE:
         db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+        db_gmail_callback = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
     if request.method == "POST":
         provider = request.POST.get('provider')
         if provider:            
@@ -220,6 +310,8 @@ def email_oauth(request):
         context_dict['email'] = db_gmail.text_value
     if db_gmail_client:
         context_dict['client_id'] = db_gmail_client.json_value
+    if db_gmail_callback:
+        context_dict['gmail_callback'] = db_gmail_callback.text_value
 
     context_dict['auth_token'] = context_dict['auth_url'] = None
     if db_gmail_provider and db_gmail:
@@ -238,22 +330,28 @@ def gmail_oauth_authorize(request):
     db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
     auth_url, state = get_google_auth_url(db_gmail)
     request.session['state'] = state
+    # Save context to database - state is the only key
+    auth_context = GoogleAuthContext(auth_url=auth_url, state=state)
+    auth_context.agency = context_dict['agency']
+    auth_context.user = request.user
+    auth_context.email = db_gmail.text_value
+    if 'alert' in context_dict:
+        auth_context.policy_alert = context_dict['alert']
+    auth_context.save()
     return redirect(auth_url)
 
 # @login_required - not required
 # sample: http://localhost:8000/accounts/login/?next=/gmail_oauth_callback/%3Fstate%3DZiNxYBOuAFxlA45t7JeBMOxGxld6FY%26code%3D4/0AUJR-x4LXrMoL_3erqmJqfb9lYJytm3R7IHWYmoPiB_if0pSkyhS12DkFKRy-XX7RmpemQ%26scope%3Dhttps%3A//www.googleapis.com/auth/gmail.send
 # How do we know: agency from callback ?
 def gmail_oauth_callback(request):
-    request_state = session_state =  None
+    callback_state = callback_code =  None
     if 'code' not in request.GET:
         return HttpResponse("Authorization failed", status=400)
-    if 'state' in request.session:
-        session_state = request.session['state']
-    context_dict = get_common_context(request, 'Gmail Callback')
-    if 'state' in request.GET:        
-        request_state = request.GET['state']
-        remove_object_from_session(request, 'state')
-    if session_state == request_state and context_dict['agency']:
+    callback_code = request.GET['code']
+    if 'state' in request.GET:
+        callback_state = request.GET['state']
+    context_dict = get_google_callback_context(request, callback_state)
+    if context_dict['agency']:
         flow = get_google_auth_flow()
         flow.fetch_token(code=request.GET['code']) # fetch and fill token from gmail
         creds = flow.credentials
@@ -300,22 +398,20 @@ def gmail_oauth_revoke(request):
             db_token.delete()
     return redirect("email_oauth")
 
-@login_required
-def email_oauth_test(request):
+def send_gmail_text(db_agency: Agency, to_email: str, subject: str, body: str):
     import base64
     from email.message import EmailMessage
     from googleapiclient.discovery import build
     # from .gmail_api import create_message, send_message
-    context_dict = get_common_context(request, 'Gmail Callback')
-    db_gmail = AgencySetting.objects.filter(agency=context_dict['agency'], name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
-    creds = get_gmail_credentials(context_dict['agency'])
+    db_gmail = AgencySetting.objects.filter(agency=db_agency, name=AgencySetting.AGENCY_OAUTH_EMAIL).first()
+    creds = get_gmail_credentials(db_agency)
     try: 
         service = build('gmail', 'v1', credentials=creds)
         msg = EmailMessage()
-        msg.set_content("test message from dj_sd")
-        msg['To'] = "rudrawal@avconnect.ai"
+        msg.set_content(body)
+        msg['To'] = to_email
         msg['From'] = db_gmail.text_value
-        msg['Subject'] = 'DJ_SD: Test email'
+        msg['Subject'] = subject
         message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
         body = {'raw': message}
         send_message = (
@@ -326,14 +422,16 @@ def email_oauth_test(request):
         )
         print(F'Message Id: {send_message["id"]}')
     except Exception as error:
-        print(F'An error occurred: {error}')
-    """
-    service = build("gmail", "v1", credentials=creds)
-    subject="Test OAUTH gmail", 
-    email_text="test message from gmail oauth"
-    message = create_message(sender=db_gmail.text_value, to='ajay_rudrawal@hotmail.com', subject=subject, message_text=email_text)
-    send_message(service, db_gmail.text_value, message)
-    """
+        print(F'An error occurred: {error}')    
+
+@login_required
+def send_test_email(request):
+    context_dict = get_common_context(request, 'Gmail Callback')
+    db_agency = context_dict['agency']
+    subject = 'dj_sd: Test email'
+    body = "Test message from dj_sd"
+    to_email = "rudrawal@avconnect.ai"
+    send_gmail_text(db_agency, to_email, subject, body)
     return redirect("email_oauth")
 
 @login_required
@@ -341,6 +439,7 @@ def send_email(request, template_id=None):
     #TODO Save email feature
     #TODO Save as New Email feature
     #TODO Send Email feature
+    context_dict = get_common_context(request, 'Send Email')
     if request.method == "POST":
         action = request.POST.get("action")
         template_id = request.POST.get("template_id")
@@ -357,9 +456,8 @@ def send_email(request, template_id=None):
         if action == 'create':
             form = EmailTemplateForm(request.POST)
             if form.is_valid():
-                context = get_common_context(request, 'Send Email')
                 email_template = EmailTemplate(
-                    agency=context['agency'],
+                    agency=context_dict['agency'],
                     name=form.cleaned_data['name'],
                     subject_line=form.cleaned_data['subject_line'],
                     body=form.cleaned_data['body'])
@@ -380,14 +478,31 @@ def send_email(request, template_id=None):
                 print(form.errors)
         if action == "send":
             template_id = request.POST.get("mail_template_id")
-            mail_to = request.POST.get('mail_to') 
+            mail_to = request.POST.get('mail_to')
             if mail_to:
                 mail_subject = request.POST.get('mail_subject')
                 mail_body = request.POST.get('mail_body')
+                db_template = db_alert = db_customer = db_policy = db_template = None
+                if template_id:
+                    db_template = EmailTemplate.objects.get(id=template_id)
+                if 'alert' in context_dict:
+                    db_alert = context_dict['alert']
+                    db_customer = db_alert.customer
+                    db_policy = db_alert.policy
+                db_sent = SentEmail(mail_to=mail_to,
+                                    subject_line=mail_subject,
+                                    body = mail_body,
+                                    agency=context_dict['agency'],
+                                    policy_alert = db_alert,
+                                    customer = db_customer,
+                                    policy = db_policy,
+                                    template=db_template,
+                                    )
+                db_sent.save() # Save this email to database, before sending
+                send_gmail_text(context_dict['agency'], mail_to, mail_subject, mail_body)
                 print(f'Sent Email to: {mail_to}')
             return redirect(f'/send_email/{template_id}')
 
-    context_dict = get_common_context(request, 'Send Email')
     templates = EmailTemplate.objects.filter(agency=context_dict['agency']).order_by('name').all()
     if template_id: # if any template is selected by user
         instance = get_object_or_404(EmailTemplate, agency=context_dict['agency'], id=template_id)
@@ -409,7 +524,7 @@ def send_email(request, template_id=None):
         customer = context_dict['alert'].customer
         variables['policy_number'] = policy.number
         variables['policy_type'] = policy.lob
-        variables['expiration_date'] = policy.end_date
+        variables['expiration_date'] = policy.end_date.strftime("%Y-%m-%d") if policy.end_date else None
         variables['customer_name'] = customer.name
         variables['customer_email'] = customer.email
         variables['customer_phone'] = customer.phone
@@ -433,6 +548,13 @@ def send_email(request, template_id=None):
             'templates': templates,
             'templates_data': mark_safe(json.dumps(template_data)),
         })
+
+@login_required
+def email_history(request):
+    context_dict = get_common_context(request, 'Send Email')
+    if request.method == "POST":
+        pass
+    return render(request, 'sd_main/dash/vehicles.html', context_dict)
 
 @login_required
 def vehicles(request):
@@ -492,3 +614,4 @@ def upload_policy(request):
                 context_dict['error'] = f'{request_file.name}: empty or invalid file!'
                 # return render(request, "sd_main/dash/upload.html", context_dict)
     return render(request, "sd_main/dash/upload.html", context=context_dict)
+

@@ -80,6 +80,7 @@ deployment/**/*
 
 # Django static files
 *staticfiles/
+*secrets/
 *mediafiles/
 
 # Environments

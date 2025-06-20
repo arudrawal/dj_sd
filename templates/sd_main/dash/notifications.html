@@ -2,9 +2,18 @@
 {% block page_script %}
 <script>
     function submitSelectForm(alert_id) {
-        const parentForm = document.getElementById("form_select_alert_"+alert_id);
-        parentForm.submit();
+        const parentFormSel = document.getElementById("form_select_alert_"+alert_id);
+        parentFormSel.submit();
     }
+    function submitEditForm(alert_id) {
+        const parentFormSel = document.getElementById("form_edit_alert_"+alert_id);
+        parentFormSel.submit();
+    }
+    function submitFilterForm() {
+        const parentFormSel = document.getElementById("form_filter_alert");
+        parentFormSel.submit();
+    }
+
     $("#dj_notification_table").DataTable();
 </script>
 {% endblock %}
@@ -20,14 +29,41 @@
 <!--begin:: Tables widget 13-->
 <div class="card mb-5 mb-xl-8">
     <!--begin::Header-->
-    <div class="card-header border-0 pt-5">
+    <div class="card-header align-items-center py-5 gap-2 gap-md-5"> <!--card-header border-0 pt-10-->
         <h3 class="card-title align-items-start flex-column">
-			<span class="card-label fw-bold fs-3 mb-1">Notifications</span>
+			<span class="card-label fw-bold fs-3 mb-1">{{page_title}}</span>
 			{#<span class="text-muted mt-1 fw-semibold fs-7">Over 500 orders</span> #}
 		</h3>
-        <div class="card-toolbar">
-            <a href="#" class="btn btn-sm btn-light-primary"> 
-                <i class="ki-duotone ki-plus fs-2"></i>New Notification</a>
+        <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
+            <form name="form_filter_alert" id="form_filter_alert" method="post" action="{%url 'filter_alert' %}">
+                {% csrf_token %}
+                <div class="row mb-0">
+                    <div class="w-250 mw-200px">
+                        <div class="input-group-sm mb-0">
+                            <!--begin::Select-->
+                            <select class="form-control" name="alert_category" onchange="submitFilterForm()">
+                                <option value="all" {%if alert_category == "all" %}selected{%endif%}>Category: All</option>
+                                {% for var_cat in cats %}
+                                    <option value="{{var_cat}}" {%if alert_category == var_cat %}selected{% endif %}>{{var_cat}}</option>
+                                {% endfor %}
+                            </select>
+                            <!--end::Select2-->
+                        </div>
+                    </div>
+                    <div class="w-250 mw-200px">
+                        <div class="input-group-sm mb-0">
+                            <!--begin::Select-->
+                            <select class="form-control" name="alert_sub_category" onchange="submitFilterForm()">
+                                <option value="all" {%if alert_sub_category == "all" %}selected{% endif %}>Sub-Category: All</option>
+                                {% for var_sub_cat in sub_cats %}
+                                    <option value="{{var_sub_cat}}" {%if alert_sub_category == var_sub_cat %}selected{% endif %}>{{var_sub_cat}}</option>
+                                {% endfor %}
+                            </select>
+                            <!--end::Select2-->
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     <!--end::Header-->
@@ -134,8 +170,8 @@
                                     <form action="{% url 'select_alert' %}" method="post" name="form_select_alert_{{alert.id}}" id="form_select_alert_{{alert.id}}">
                                         {% csrf_token %}
                                         <input type="hidden" name="selected_alert_id" value="{{alert.id}}"></hidden>
-                                        <button type="submit" style="display: none;">Select</button>
-                                        <a href="javascript:submitSelectForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
+                                        <button name='select_alert' id='select_alert_id' type="submit" style="display: none;">Select</button>
+                                        <a href="javascript:submitSelectForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="select_row">
                                             Select
                                         </a>
                                     </form>
@@ -144,9 +180,16 @@
                                 
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-kt-docs-table-filter="delete_row">
-                                        Email
-                                    </a>
+                                    {% with edit_id="form_edit_alert_{{alert.id}}" %}
+                                    <form action="{% url 'edit_alert' %}" method="post" name="form_edit_alert_{{alert.id}}" id="form_edit_alert_{{alert.id}}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="edit_alert_id" value="{{alert.id}}"></hidden>
+                                        <button name='edit_alert' id='edit_alert_id' type="submit" style="display: none;" action="edit">Edit</button>
+                                        <a href="javascript:submitEditForm({{alert.id}});" class="menu-link px-3" data-kt-docs-table-filter="edit_row">
+                                            Edit
+                                        </a>
+                                    </form>
+                                    {% endwith %}
                                 </div>
                                 <!--end::Menu item-->
                             </div>

@@ -2,9 +2,17 @@ import os
 import sys
 import django
 import json
+import yaml
+from io import StringIO
+from sd_main.aws_utils import download_s3_object
 
-SUPER_USER = 'admin'
-SUPER_PASS = 'secret1#'
+S3_BUCKET_NAME='sdconf'
+GMAIL_JSON = 'gmail_api_client_secret.json'
+SETTINGS_YAML = 'settings.yaml'
+AUTH_CALLBACK_URI = 'gmail_oauth_callback'
+
+SUPER_USER = ''
+SUPER_PASS = ''
 COMPANY_LIST = ['Farmers', 'State Farm', 'All State']
 GROUPS = ['asharma_group', 'bobs_group', 'chucks_group']
 AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0]},
@@ -15,83 +23,51 @@ AGENCIES = [{'name': 'Archana Agency', 'company': COMPANY_LIST[0]},
 #  Apply conversion: Convert all to lower and replace space by '_'
 # Xlated Agency_map: policy,name,billing_account,policy_start_date,policy_end_date,lob,status,phone_number,email,alert_classification,due_date,created_date,alert_category,alert_sub-category
 # database_map: number,name,company_account,start_date,end_date,lob,work_status,phone,email,alert_level,due_date,date_created,alert_category,alert_sub_category
-
+farmers_customer_map = {
+        str.lower('Name'): 'name', 
+        str.lower('Billing Account').replace(' ', '_' ): 'company_account', 
+        str.lower('Email'): 'email', 
+        str.lower('Phone Number').replace(' ', '_'): 'phone', 
+        str.lower('DOB'): 'dob',
+    }
 CUSTOMER_MAP = {
-    AGENCIES[0]['name']: {
-        str.lower('Name'): 'name', 
-        str.lower('Billing Account').replace(' ', '_' ): 'company_account', 
-        str.lower('Email'): 'email', 
-        str.lower('Phone Number').replace(' ', '_'): 'phone', 
-        str.lower('DOB'): 'dob',
-    },
-    AGENCIES[1]['name']: {
-        str.lower('Name'): 'name', 
-        str.lower('Billing Account').replace(' ', '_' ): 'company_account', 
-        str.lower('Email'): 'email', 
-        str.lower('Phone Number').replace(' ', '_'): 'phone', 
-        str.lower('DOB'): 'dob',
-    },
-    AGENCIES[2]['name']: {
-        str.lower('Name'): 'name', 
-        str.lower('Billing Account').replace(' ', '_'): 'company_account', 
-        str.lower('email'): 'email', 
-        str.lower('Phone Number').replace(' ', '_'): 'phone', 
-        str.lower('DOB'): 'dob',
-    },
+    AGENCIES[0]['name']: farmers_customer_map,
+    AGENCIES[1]['name']: farmers_customer_map,
+    AGENCIES[2]['name']: farmers_customer_map,
 }
-POLICY_MAP = {
-    AGENCIES[0]['name']: {
+farmers_policy_map = {
         str.lower('Policy'): 'number', 
         str.lower('LOB'): 'lob', 
         str.lower('Policy Start Date').replace(' ', '_'): 'start_date',
         str.lower('Policy End Date').replace(' ', '_'): 'end_date',
-    },
-    AGENCIES[1]['name']: {
-        str.lower('Policy'): 'number', 
-        str.lower('LOB'): 'lob', 
-        str.lower('Policy Start Date'): 'start_date', 
-        str.lower('Policy End Date'): 'end_date',
-    },
-    AGENCIES[2]['name']: {
-        str.lower('Policy'): 'number',
-        str.lower('LOB'): 'lob',
-        str.lower('Policy Start Date').replace(' ', '_'): 'start_date',
-        str.lower('Policy End Date').replace(' ', '_'): 'end_date'
-    },
+        str.lower('Premium').replace(' ', '_'): 'premium_amount',
+    }
+POLICY_MAP = {
+    AGENCIES[0]['name']: farmers_policy_map,
+    AGENCIES[1]['name']: farmers_policy_map,
+    AGENCIES[2]['name']: farmers_policy_map,
+}
+farmers_alert_map = {
+    str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
+    str.lower('Due Date').replace(' ', '_'): 'due_date',
+    str.lower('Created Date').replace(' ', '_'): 'created_date', 
+    str.lower('Status'): 'work_status',
+    str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
+    str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
 }
 ALERT_MAP = {
-    AGENCIES[0]['name']: {
-        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
-        str.lower('Due Date').replace(' ', '_'): 'due_date',
-        str.lower('Created Date').replace(' ', '_'): 'created_date', 
-        str.lower('Status'): 'work_status',
-        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
-        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
-    },
-    AGENCIES[1]['name']: {
-        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
-        str.lower('Due Date').replace(' ', '_'): 'due_date',
-        str.lower('Created Date').replace(' ', '_'): 'created_date', 
-        str.lower('Status'): 'work_status',
-        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
-        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
-    },
-    AGENCIES[2]['name']: {
-        str.lower('Alert Classification').replace(' ', '_'): 'alert_level', 
-        str.lower('Due Date').replace(' ', '_'): 'due_date',
-        str.lower('Created Date').replace(' ', '_'): 'created_date', 
-        str.lower('Status'): 'work_status',
-        str.lower('Alert Category').replace(' ', '_'): 'alert_category', 
-        str.lower('Alert Sub-Category').replace(' ', '_'): 'alert_sub_category',
-    },
+    AGENCIES[0]['name']: farmers_alert_map,
+    AGENCIES[1]['name']: farmers_alert_map,
+    AGENCIES[2]['name']: farmers_alert_map,
 }
+
 DOMAIN_EMAIL = 'shivark.com'
 AJAY_EMAIL = f'ajay@{DOMAIN_EMAIL}'
 MUKESH_EMAIL = f'mukesh@{DOMAIN_EMAIL}'
 ARCHANA_EMAIL = f'archana@{DOMAIN_EMAIL}'
-USERS = [{'user_name':'ajay', 'email': AJAY_EMAIL, 'password': SUPER_PASS, 'groups': [GROUPS[0], GROUPS[1]]},
-         {'user_name':'mukesh', 'email': MUKESH_EMAIL, 'password': SUPER_PASS, 'groups': [GROUPS[0]]},
-         {'user_name':'archana', 'email': ARCHANA_EMAIL, 'password': SUPER_PASS, 'groups': [GROUPS[0]]},
+USERS = [{'user_name':'ajay', 'email': AJAY_EMAIL, 'groups': [GROUPS[0], GROUPS[1]]},
+         {'user_name':'mukesh', 'email': MUKESH_EMAIL, 'groups': [GROUPS[0]]},
+         {'user_name':'archana', 'email': ARCHANA_EMAIL, 'groups': [GROUPS[0]]},
         ]
 AGENCY_USERS = {
     AGENCIES[0]['name']: ['ajay', 'mukesh', 'archana'],
@@ -119,12 +95,49 @@ EMAIL_TEMPLATE = {
             "{{contact_information}}"
 }
 
-def create_admin_user():
+def init_super_user():
+    data = None
+    app_runner_url = os.environ.get("AWS_APP_RUNNER_DEFAULT_DOMAIN")
+    if app_runner_url:
+        yaml_string = download_s3_object(S3_BUCKET_NAME, SETTINGS_YAML)
+        data = yaml.safe_load(StringIO(yaml_string))
+        print(f"YAML data loaded successfully [s3]: {S3_BUCKET_NAME}/{SETTINGS_YAML}")
+    else:
+        yaml_file_path = f"secrets/{SETTINGS_YAML}"
+        try:
+            with open(yaml_file_path, 'r') as file:
+                data = yaml.safe_load(file)
+                print(f"YAML data loaded successfully: {yaml_file_path}")
+        except FileNotFoundError:
+            print(f"Error: The file '{yaml_file_path}' was not found.")
+        except yaml.YAMLError as e:
+            print(f"Error parsing YAML file: {e}")
+    if data:
+        return data['djadmin']['user'], data['djadmin']['password']
+    return 'admin', 'password'
+
+def get_mail_client_credentials():
+    client_id_data = callback_url = None
+    gmail_client_path = f"secrets/{GMAIL_JSON}"
+    app_runner_url = os.environ.get("AWS_APP_RUNNER_DEFAULT_DOMAIN")
+    if app_runner_url: # App runner
+        callback_url=f'{app_runner_url}/{AUTH_CALLBACK_URI}/'
+        json_content = download_s3_object(S3_BUCKET_NAME, GMAIL_JSON)
+        if json_content:
+            client_id_data = json.loads(json_content)
+    elif os.path.exists(gmail_client_path):
+        callback_url = f'http://localhost:8000/{AUTH_CALLBACK_URI}/'
+        with open(gmail_client_path, "r") as client_id_file:
+            client_id_data = json.load(client_id_file)
+    return client_id_data, callback_url
+
+
+def create_admin_user(super_user, super_pass):
     from django.contrib.auth.models import User
     # Admin user
-    db_admin = User.objects.filter(username=SUPER_USER).first()
+    db_admin = User.objects.filter(username=super_user).first()
     if not db_admin:
-        db_admin = User.objects.create_superuser(username=SUPER_USER, email=AJAY_EMAIL, password=SUPER_PASS)
+        db_admin = User.objects.create_superuser(username=super_user, email=AJAY_EMAIL, password=super_pass)
     return db_admin
 
 def create_groups(group_list: list):
@@ -147,13 +160,13 @@ def create_groups(group_list: list):
 #    db_groups[group] = db_group
 #    # db_group.user_set.add(db_user)
 
-def create_other_users(user_list: list, db_groups: dict):
+def create_other_users(user_list: list, db_groups: dict, super_pass):
     from django.contrib.auth.models import User
     db_users = {}
     for user in user_list:
         db_user = User.objects.filter(username=user['user_name']).first()
         if not db_user: # User.objects.filter(username=user['user_name']).exists():
-            db_user = User.objects.create_user(user['user_name'], user['email'], user['password'])
+            db_user = User.objects.create_user(user['user_name'], user['email'], super_pass)
             for user_group in user['groups']:
                 db_user.groups.add(db_groups[user_group])
             db_users[user['user_name']] = db_user
@@ -244,46 +257,44 @@ def create_agency_email_template():
 
 def load_system_settings():
     from sd_main.models import SystemSetting
-    db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
     ret_val = False
-    if not db_gmail_client:
-        try:
-            if os.path.exists("sd_main/credentials.json"):
-                with open("sd_main/credentials.json", "r") as client_id_file:
-                    client_id_data = json.load(client_id_file)
-                    db_gmail_client = SystemSetting.objects.create(name=SystemSetting.GMAIL_CLIENT_ID, json_value=client_id_data)
-                    ret_val = True
-        except Exception as e:
-            print(e)
-    db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
-    if not db_gmail_redirect_url:
-        db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL,
-                                                text_value='http://localhost:8000/gmail_oauth_callback/')
-        ret_val = True
+    client_id_data, callback_url = get_mail_client_credentials()
+    if client_id_data and callback_url:
+        db_gmail_client = SystemSetting.objects.filter(name=SystemSetting.GMAIL_CLIENT_ID).first()
+        if not db_gmail_client:
+            db_gmail_client = SystemSetting.objects.create(name=SystemSetting.GMAIL_CLIENT_ID, json_value=client_id_data)
+            ret_val = True
+        db_gmail_redirect_url = SystemSetting.objects.filter(name=SystemSetting.GMAIL_REDIRECT_URL).first()
+        if not db_gmail_redirect_url:
+            db_gmail_redirect_url = SystemSetting.objects.create(name=SystemSetting.GMAIL_REDIRECT_URL, text_value=callback_url)
+            ret_val = True
+    else:
+        print (f"Failed to read Gmail API client ID and callback URL")
     return ret_val
 
 if __name__ == '__main__':
-   new_root = os.path.join(os.path.dirname(__file__), '..')
-   print (f"New root: {new_root}")
-   sys.path.append(new_root)
-   os.environ['DJANGO_SETTINGS_MODULE'] = 'sd_proj.settings'
-   django.setup()
-   create_admin_user()
+    # new_root = os.path.join(os.path.dirname(__file__), '..')
+    # print (f"New root: {new_root}")
+    # sys.path.append(new_root)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'sd_proj.settings'
+    django.setup()
+    super_user, super_pass = init_super_user()
+    create_admin_user(super_user, super_pass)
 
-   db_groups = create_groups(GROUPS)
-   print (f"Created Groups: {db_groups.keys()}")
-   db_users = create_other_users(USERS, db_groups)
-   print (f"Created Users: {db_users.keys()}")
-   db_companies = create_company()
-   print (f"Created Companies: {db_companies.keys()}")
-   db_agencies = create_agencies(AGENCIES, db_companies, db_groups)
-   print (f"Created Agencies: {db_agencies.keys()}")
-   create_agency_settings(db_agencies)
-   print (f"Created Agency Settings")
-   create_agency_users()
-   print (f"Created Agency Users")
-   create_agency_email_template()
-   print(f"Created Agency Email Templates")
-   if load_system_settings():
+    db_groups = create_groups(GROUPS)
+    print (f"Created Groups: {db_groups.keys()}")
+    db_users = create_other_users(USERS, db_groups, super_pass)
+    print (f"Created Users: {db_users.keys()}")
+    db_companies = create_company()
+    print (f"Created Companies: {db_companies.keys()}")
+    db_agencies = create_agencies(AGENCIES, db_companies, db_groups)
+    print (f"Created Agencies: {db_agencies.keys()}")
+    create_agency_settings(db_agencies)
+    print (f"Created Agency Settings")
+    create_agency_users()
+    print (f"Created Agency Users")
+    create_agency_email_template()
+    print(f"Created Agency Email Templates")
+    if load_system_settings():
         print (f"Added System Settings Gmail OAUTH client/Redirect URL")
 

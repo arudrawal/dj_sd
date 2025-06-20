@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Company, Customer, Agency, AgencySetting, AgencyUser, PolicyAlert
 from .models import Driver, Vehicle, Policy, PolicyDocument, SystemSetting, EmailTemplate
+from .models import SentEmail
 
 # Register your models here.
 # admin.site.register(Policy)
@@ -43,6 +44,11 @@ class PolicyAlertAdmin(admin.ModelAdmin):
     def agency_name(self, obj):
         return obj.agency.name
 
+class SentEmailAdmin(admin.ModelAdmin):
+    list_display = ('customer_name', 'mail_to', 'subject_line', 'created_at')
+    def customer_name(self, obj):
+        return obj.customer.name
+    
 
 # Register the admin class with the associated model
 admin.site.register(SystemSetting, SystemSettingAdmin)
@@ -57,3 +63,4 @@ admin.site.register(Driver)
 admin.site.register(Vehicle)
 admin.site.register(PolicyDocument)
 admin.site.register(EmailTemplate)
+admin.site.register(SentEmail)

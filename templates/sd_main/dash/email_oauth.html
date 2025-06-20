@@ -24,7 +24,7 @@
         <div class="card-header border-0 pt-5">
             <h3 class="card-title align-items-start flex-column">
                 <span class="card-label fw-bold fs-3 mb-1">Agency Settings</span>
-                {#<span class="text-muted mt-1 fw-semibold fs-7">Over 500 orders</span> #}
+                <span class="text-muted mt-1 fw-semibold fs-9">Redirect URL: {{gmail_callback}}</span>
             </h3>
             <!-- <div class="card-toolbar">
                 <a href="#" class="btn btn-sm btn-light-primary"> 
@@ -101,9 +101,10 @@
 	<!--end::Body-->
     <!--begin::Body-->
     {% if auth_token %}
+    <br/>
     <div class="card shadow-sm">
         <div class="card-body">
-            <a href="{%url 'email_oauth_test' %}" class="btn btn-light-primary">Send Test Email from {{provider}}: {{email}}</a>
+            <a href="{%url 'send_test_email' %}" class="btn btn-light-primary">Send Test Email from {{provider}}: {{email}}</a>
         </div>
     </div>
     {% endif %}

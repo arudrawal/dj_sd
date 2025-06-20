@@ -104,6 +104,7 @@ class Policy(models.Model):
     number = models.CharField("Policy Number", max_length=128, db_column=constants.POLICY_NUMBER_COLUMN)
     start_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_START_DATE_COLUMN)
     end_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_END_DATE_COLUMN)
+    premium_amount = models.DecimalField(null=True, blank=False, db_column=constants.POLICY_PREMIUM_COLUMN, decimal_places=2, max_digits=10)
     LOB = (
         ('Auto', 'Auto'),
         ('Home', 'Home'),
@@ -174,18 +175,29 @@ class EmailTemplate(models.Model):
     sub_category = models.CharField(max_length=256, null=True)
 
 # Maintain history of sent emails. 
-# Customer - must exist to send email.
+# Agency/Customer - must exist to send email.
 # Mail could related to Policy or Alert or could be normal communication.
-# Template: may or may not be used.
+# Policy/Alert/Template: may or may not be associated.
 class SentEmail(models.Model):
-    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE) # 
-    policy = models.ForeignKey('Policy', on_delete=models.CASCADE)
-    pilicy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE)
-    template = models.ForeignKey('EmailTemplate', on_delete=models.CASCADE)
-    mail_to = models.TextField()
+    mail_to = models.CharField(max_length=256)
     subject_line = models.CharField(max_length=256)
     body = models.TextField()
+    
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True) # 
+    policy = models.ForeignKey('Policy', on_delete=models.CASCADE, null=True)
+    policy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE, null=True)
+    template = models.ForeignKey('EmailTemplate', on_delete=models.CASCADE, null=True)
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
 
+class GoogleAuthContext(models.Model):
+    state = models.TextField()
+    auth_url = models.TextField()
+    code = models.TextField(null=True)
+    email = models.TextField(null=True)
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, to_field='id')
+    policy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE, null=True)
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
