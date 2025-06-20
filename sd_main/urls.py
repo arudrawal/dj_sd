@@ -5,11 +5,13 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path("alerts", views.pending_alerts, name="index"),
+    path("", views.index, name="index"),
     path("login_agency/", views.login_agency, name="login_agency"),
-    path("select_alert/", views.select_alert, name="select_alert"),
-    path("edit_alert/", views.edit_alert, name="edit_alert"),
-    path("save_alert/", views.save_alert, name="save_alert"),
+    path("pending_alerts", views.pending_alerts, name="pending_alerts"),
+    path("select_alert/", views.select_pending_alert, name="select_alert"),
+    path("edit_alert/", views.edit_pending_alert, name="edit_alert"),
+    path("save_alert/", views.save_pending_alert, name="save_alert"),
+    path("filter_alert/", views.filter_pending_alert, name="filter_alert"),
     path("customers/", views.customers, name="customers"),
     path("policies/", views.policies, name="policies"),
     path("email_oauth/", views.email_oauth, name="email_oauth"),

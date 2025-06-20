@@ -52,6 +52,11 @@ def get_common_context(request, page_title: str):
         db_alert = PolicyAlert.objects.get(id=int(request.session['selected_alert_id']))
         if db_alert:
             context_dict['alert'] = db_alert
+    context_dict['alert_category'] = context_dict['alert_sub_category'] = 'all'
+    if 'alert_category' in request.session:
+        context_dict['alert_category'] = request.session['alert_category']
+    if 'alert_sub_category' in request.session:
+        context_dict['alert_sub_category'] = request.session['alert_sub_category']
     return context_dict
 
 def get_google_callback_context(request, state: str):
@@ -99,21 +104,20 @@ def login_agency(request):
     #    context_dict['agency_list'].append(agency)
     return render(request, 'registration/login_agency.html', context=context_dict)
 
+@login_required
+def index(request):
+    return redirect("pending_alerts")
 
 @login_required
 def pending_alerts(request):
     context_dict = get_common_context(request, 'Pending Alerts')
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
-        category = request.GET.get('category', 'all')
-        sub_category = request.GET.get('sub-category', 'all')
-        context_dict['alert_category'] = category 
-        context_dict['alert_sub_category'] = sub_category
         cat_params = {}
-        if category.lower() != 'all':
-            cat_params['alert_category'] = category
-        if sub_category.lower() != 'all':
-            cat_params['alert_sub_category'] = sub_category
+        if context_dict['alert_category'].lower() != 'all':
+            cat_params['alert_category'] = context_dict['alert_category']
+        if context_dict['alert_sub_category'].lower() != 'all':
+            cat_params['alert_sub_category'] = context_dict['alert_sub_category']
         alerts = PolicyAlert.objects.filter(agency=context_dict['agency'], is_active=True, **cat_params).order_by('due_date').all()
         context_dict['alerts'] = alerts
     else:
@@ -123,7 +127,18 @@ def pending_alerts(request):
     return render(request, 'sd_main/dash/notifications.html', context=context_dict)
 
 @login_required
-def select_alert(request):
+def filter_pending_alert(request):
+    if request.method == "POST":
+        category = request.POST.get('alert_category')
+        sub_category = request.POST.get('alert_sub_category')
+        if category:
+            request.session['alert_category'] = category
+        if sub_category:
+            request.session['alert_sub_category'] = sub_category
+    return redirect('pending_alerts')
+
+@login_required
+def select_pending_alert(request):
     if request.method == "POST":
         selected_alert_id = request.POST.get('selected_alert_id')
         if selected_alert_id:
@@ -133,7 +148,7 @@ def select_alert(request):
     return redirect('index')
 
 @login_required
-def edit_alert(request):
+def edit_pending_alert(request):
     context_dict = get_common_context(request, 'Edit Alert')
     if request.method == "POST":
         select_alert = False
@@ -152,7 +167,7 @@ def edit_alert(request):
     return render(request, 'sd_main/dash/edit_alert.html', context=context_dict)
 
 @login_required
-def save_alert(request):
+def save_pending_alert(request):
     context_dict = get_common_context(request, 'Save Alert')
     if request.method == "POST":
         customer_id = request.POST.get('edit_customer_id')

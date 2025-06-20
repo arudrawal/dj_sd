@@ -9,6 +9,11 @@
         const parentFormSel = document.getElementById("form_edit_alert_"+alert_id);
         parentFormSel.submit();
     }
+    function submitFilterForm() {
+        const parentFormSel = document.getElementById("form_filter_alert");
+        parentFormSel.submit();
+    }
+
     $("#dj_notification_table").DataTable();
 </script>
 {% endblock %}
@@ -30,15 +35,16 @@
 			{#<span class="text-muted mt-1 fw-semibold fs-7">Over 500 orders</span> #}
 		</h3>
         <div class="card-toolbar flex-row-fluid justify-content-end gap-5">
-            <form name="filter_alert">
+            <form name="form_filter_alert" id="form_filter_alert" method="post" action="{%url 'filter_alert' %}">
+                {% csrf_token %}
                 <div class="row mb-0">
                     <div class="w-250 mw-200px">
                         <div class="input-group-sm mb-0">
                             <!--begin::Select-->
-                            <select class="form-control" name="category">
-                                <option value="all">All</option>
-                                {% for cat in cats %}
-                                    <option value="{{cat}}">{{cat}}</option>
+                            <select class="form-control" name="alert_category" onchange="submitFilterForm()">
+                                <option value="all" {%if alert_category == "all" %}selected{%endif%}>All</option>
+                                {% for var_cat in cats %}
+                                    <option value="{{var_cat}}" {%if alert_category == var_cat %}selected{% endif %}>{{var_cat}}</option>
                                 {% endfor %}
                             </select>
                             <!--end::Select2-->
@@ -47,10 +53,10 @@
                     <div class="w-250 mw-200px">
                         <div class="input-group-sm mb-0">
                             <!--begin::Select-->
-                            <select class="form-control" name="sub-category">
-                                <option value="all">All</option>
-                                {% for sub_cat in sub_cats %}
-                                    <option value="{{sub_cat}}">{{sub_cat}}</option>
+                            <select class="form-control" name="alert_sub_category" onchange="submitFilterForm()">
+                                <option value="all" {%if alert_sub_category == "all" %}selected{% endif %}>All</option>
+                                {% for var_sub_cat in sub_cats %}
+                                    <option value="{{var_sub_cat}}" {%if alert_sub_category == var_sub_cat %}selected{% endif %}>{{var_sub_cat}}</option>
                                 {% endfor %}
                             </select>
                             <!--end::Select2-->
