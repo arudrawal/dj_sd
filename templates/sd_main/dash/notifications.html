@@ -42,7 +42,7 @@
                         <div class="input-group-sm mb-0">
                             <!--begin::Select-->
                             <select class="form-control" name="alert_category" onchange="submitFilterForm()">
-                                <option value="all" {%if alert_category == "all" %}selected{%endif%}>All</option>
+                                <option value="all" {%if alert_category == "all" %}selected{%endif%}>Category: All</option>
                                 {% for var_cat in cats %}
                                     <option value="{{var_cat}}" {%if alert_category == var_cat %}selected{% endif %}>{{var_cat}}</option>
                                 {% endfor %}
@@ -54,7 +54,7 @@
                         <div class="input-group-sm mb-0">
                             <!--begin::Select-->
                             <select class="form-control" name="alert_sub_category" onchange="submitFilterForm()">
-                                <option value="all" {%if alert_sub_category == "all" %}selected{% endif %}>All</option>
+                                <option value="all" {%if alert_sub_category == "all" %}selected{% endif %}>Sub-Category: All</option>
                                 {% for var_sub_cat in sub_cats %}
                                     <option value="{{var_sub_cat}}" {%if alert_sub_category == var_sub_cat %}selected{% endif %}>{{var_sub_cat}}</option>
                                 {% endfor %}
