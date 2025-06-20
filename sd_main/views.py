@@ -101,14 +101,25 @@ def login_agency(request):
 
 
 @login_required
-def index(request):
+def pending_alerts(request):
     context_dict = get_common_context(request, 'Pending Alerts')
     context_dict['alerts']= None
     if 'agency' in context_dict.keys():
-        alerts = PolicyAlert.objects.filter(agency=context_dict['agency'], is_active=True).order_by('due_date').all()
+        category = request.GET.get('category', 'all')
+        sub_category = request.GET.get('sub-category', 'all')
+        context_dict['alert_category'] = category 
+        context_dict['alert_sub_category'] = sub_category
+        cat_params = {}
+        if category.lower() != 'all':
+            cat_params['alert_category'] = category
+        if sub_category.lower() != 'all':
+            cat_params['alert_sub_category'] = sub_category
+        alerts = PolicyAlert.objects.filter(agency=context_dict['agency'], is_active=True, **cat_params).order_by('due_date').all()
         context_dict['alerts'] = alerts
     else:
         return redirect('login_agency')
+    context_dict['cats'] = PolicyAlert.objects.values_list('alert_category', flat=True).distinct()
+    context_dict['sub_cats'] = PolicyAlert.objects.values_list('alert_sub_category', flat=True).distinct()
     return render(request, 'sd_main/dash/notifications.html', context=context_dict)
 
 @login_required

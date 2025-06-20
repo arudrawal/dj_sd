@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path("alerts", views.pending_alerts, name="index"),
     path("login_agency/", views.login_agency, name="login_agency"),
     path("select_alert/", views.select_alert, name="select_alert"),
     path("edit_alert/", views.edit_alert, name="edit_alert"),
