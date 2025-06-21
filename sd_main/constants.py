@@ -29,7 +29,7 @@ POLICY_ALERT_CREATED_DATE_COLUMN = "created_date"
 POLICY_ALERT_WORK_STATUS_COLUMN = "work_status"
 POLICY_ALERT_CATEGORY_COLUMN = "alert_category"
 POLICY_ALERT_SUB_CATEGORY_COLUMN = "alert_sub_category"
-POLICY_ALERT_IS_ACTIVE_COLUMN = "is_active"
+
 
 DOC_MERGE_KEYWORDS = {
     "customer_name": "Customer Name",

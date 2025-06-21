@@ -7,9 +7,13 @@ from . import constants
 class SystemSetting(models.Model):
     GMAIL_CLIENT_ID = 'gmail_client_id'
     GMAIL_REDIRECT_URL = 'gmail_redirect_url'
-    name = models.TextField(primary_key=True, max_length=100, null=False, blank=False)
-    text_value =  models.TextField(max_length=1024, null=True, default=None)
-    json_value = models.JSONField(null=True, blank=True)
+    name = models.TextField(primary_key=True, max_length=256, null=False, blank=False)
+    text_value = models.TextField(
+        max_length=1024, # Length in the forms
+        null=True,  # Allows the field to be empty
+        blank=True, # Makes the field optional in forms
+        default=None)
+    json_value = models.JSONField(null=True, blank=True, default=None)
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['name'], name='unique_system_setting')
@@ -35,7 +39,7 @@ class Agency(models.Model):
     contact_email = models.CharField(max_length=128)
     contact_phone = models.CharField(max_length=128)
     timezone = models.CharField(max_length=128)
-    active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -71,10 +75,14 @@ class AgencySetting(models.Model):
     # This goes to name for
     AUTH_PRIVIDER_GOOGLE = 'google'
 
-    name = models.TextField(max_length=100, blank=False)
-    text_value =  models.TextField(max_length=1024, null=True)
-    json_value = models.JSONField(null=True)
+    name = models.TextField(max_length=256, blank=False, null=False)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
+    text_value =  models.TextField(max_length=1024, blank=True, null=True)
+    json_value = models.JSONField(null=True, blank=True)
+    # Other fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['agency', 'name'], name='unique_agency_setting')
@@ -87,8 +95,8 @@ class Customer(models.Model):
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE)
     name = models.CharField(max_length=128, db_column=constants.CUSTOMER_NAME_COLUMN)
     company_account = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_COMPANY_ACCOUNT)
-    email = models.CharField(max_length=256, null=True, db_column=constants.CUSTOMER_EMAIL_COLUMN)
-    phone = models.CharField(max_length=128, null=True, db_column=constants.CUSTOMER_PHONE_COLUMN)
+    email = models.CharField(max_length=256, null=True, blank=True, db_column=constants.CUSTOMER_EMAIL_COLUMN)
+    phone = models.CharField(max_length=128, null=True, blank=True, db_column=constants.CUSTOMER_PHONE_COLUMN)
     dob = models.DateField(null=True, db_column=constants.CUSTOMER_DOB_COLUMN)
     # Other fields
     created_at = models.DateTimeField(auto_now_add=True)
@@ -102,9 +110,9 @@ class Policy(models.Model):
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE) # many=>one: multiple policies for one customer
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # many=>one: multiple policeis for one agency
     number = models.CharField("Policy Number", max_length=128, db_column=constants.POLICY_NUMBER_COLUMN)
-    start_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_START_DATE_COLUMN)
-    end_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_END_DATE_COLUMN)
-    premium_amount = models.DecimalField(null=True, blank=False, db_column=constants.POLICY_PREMIUM_COLUMN, decimal_places=2, max_digits=10)
+    start_date = models.DateField(null=True, blank=True, db_column=constants.POLICY_START_DATE_COLUMN)
+    end_date = models.DateField(null=True, blank=True, db_column=constants.POLICY_END_DATE_COLUMN)
+    premium_amount = models.DecimalField(null=True, blank=True, db_column=constants.POLICY_PREMIUM_COLUMN, decimal_places=2, max_digits=10)
     LOB = (
         ('Auto', 'Auto'),
         ('Home', 'Home'),
@@ -119,12 +127,12 @@ class PolicyAlert(models.Model):
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE) # multiple alerts => one customers
     policy = models.ForeignKey("Policy", on_delete=models.CASCADE) # one alert =>one policy
     alert_level = models.CharField(max_length=128, db_column=constants.POLICY_ALERT_LEVEL_COLUMN) # "Critical/Pending"
-    due_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_ALERT_DUE_DATE_COLUMN)
-    created_date = models.DateField(null=True, blank=False, db_column=constants.POLICY_ALERT_CREATED_DATE_COLUMN)
+    due_date = models.DateField(null=True, blank=True, db_column=constants.POLICY_ALERT_DUE_DATE_COLUMN)
+    created_date = models.DateField(null=True, blank=True, db_column=constants.POLICY_ALERT_CREATED_DATE_COLUMN)
     work_status = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_WORK_STATUS_COLUMN) # InProgress/New,
     alert_category = models.CharField(max_length=128, null=True, db_column=constants.POLICY_ALERT_CATEGORY_COLUMN) # Alert Reason Summary
     alert_sub_category = models.CharField(max_length=512, null=True, db_column=constants.POLICY_ALERT_SUB_CATEGORY_COLUMN) # Alert Reason details
-    is_active = models.BooleanField(default=True, db_column=constants.POLICY_ALERT_IS_ACTIVE_COLUMN)
+    is_active = models.BooleanField(default=True)
     agency = models.ForeignKey("Agency", on_delete=models.CASCADE) # multiple alerts => one agency
     # ManyToManyField used because vehicle can have many policies and policy can cover many vehicles.
     # vehicle = models.ManyToManyField(
@@ -165,24 +173,25 @@ class Vehicle(models.Model):
     registered_owner = models.CharField(max_length=256)
 
 class EmailTemplate(models.Model):
+    name = models.CharField(max_length=256, null=False)
+    subject_line = models.CharField(max_length=256, null=False)
+    body = models.TextField(null=False)
     agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
-    subject_line = models.CharField(max_length=256)
-    body = models.TextField()
+    category = models.CharField(max_length=256, null=True) # applicable alert category
+    sub_category = models.CharField(max_length=256, null=True) # applicable alert sub-category
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
-    category = models.CharField(max_length=256, null=True)
-    sub_category = models.CharField(max_length=256, null=True)
 
 # Maintain history of sent emails. 
 # Agency/Customer - must exist to send email.
 # Mail could related to Policy or Alert or could be normal communication.
 # Policy/Alert/Template: may or may not be associated.
 class SentEmail(models.Model):
-    mail_to = models.CharField(max_length=256)
-    subject_line = models.CharField(max_length=256)
-    body = models.TextField()
-    
+    mail_to = models.CharField(max_length=256, null=False)
+    subject_line = models.CharField(max_length=256, null=False)
+    body = models.TextField(null=False)
+    category = models.CharField(max_length=256, null=True) # context - if availabe
+    sub_category = models.CharField(max_length=256, null=True) # context - if available
     agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, null=True) # 
     policy = models.ForeignKey('Policy', on_delete=models.CASCADE, null=True)
@@ -201,3 +210,31 @@ class GoogleAuthContext(models.Model):
     policy_alert = models.ForeignKey('PolicyAlert', on_delete=models.CASCADE, null=True)
     updated_at = models.DateField(auto_now=True)
     created_at = models.DateField(auto_now_add=True)
+
+"""
+  Prompt template Key features:
+  - template_text: Main prompt content with placeholder variables
+  - versioning: Support for template versions via parent_template_id
+  - usage_count: Track popularity
+"""
+class PromptTemplate(models.Model):
+    name = models.CharField(max_length=256, null=False)
+    description = models.TextField(null=True)
+    teplate_text = models.TextField(null=False)
+    category = models.CharField(max_length=256, null=True) # context - if availabe
+    sub_category = models.CharField(max_length=256, null=True) # context - if available    
+    agency = models.ForeignKey('Agency', on_delete=models.CASCADE)
+    
+    is_active = models.BooleanField(default=True)
+    usage_count = models.IntegerField(default=0)
+    version = models.IntegerField(default=1)
+    parent_template_id = models.ForeignKey(
+        'self',  # Refers to the same model
+        on_delete=models.SET_NULL,  # What happens if the referenced row is deleted
+        null=True,  # Allows the field to be empty
+        blank=True,  # Makes the field optional in forms
+        related_name='revisions'  # Reverse relation name
+    )
+    updated_at = models.DateField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
+
